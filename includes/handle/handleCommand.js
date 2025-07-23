@@ -113,12 +113,47 @@ module.exports = function ({ api, Users, Threads, Currencies, logger, botSetting
 
       if (threadIsGroup && !isApproved) {
         const prefix = global.config.PREFIX || "/";
-        const commandName = messageBody.replace(prefix, "").split(" ")[0].toLowerCase();
-        if (commandName === "approve" && isOwner) {
-          // Allow owner to run approve command in unapproved group
+        const isPrefixedMessage = messageBody.startsWith(prefix);
+        
+        // Extract command name (with or without prefix)
+        let commandName = "";
+        if (isPrefixedMessage) {
+          commandName = messageBody.replace(prefix, "").split(" ")[0].toLowerCase();
         } else {
-          // Block ALL other commands in unapproved group (regardless of usePrefix)
-          return;
+          commandName = messageBody.split(" ")[0].toLowerCase();
+        }
+        
+        // Check if this is a known command (from baby.js or any other command)
+        const { commands } = global.client;
+        let isKnownCommand = false;
+        
+        if (commands) {
+          // Check direct command name
+          if (commands.has(commandName)) {
+            isKnownCommand = true;
+          } else {
+            // Check aliases
+            for (const [name, cmd] of commands) {
+              if (cmd.config.aliases && cmd.config.aliases.includes(commandName)) {
+                isKnownCommand = true;
+                break;
+              }
+            }
+          }
+        }
+        
+        // Also check for trigger words from baby.js handleEvent
+        const babyTriggers = ["baby", "bby", "bot", "jan", "babu", "janu", "bbu", "bbz", "জান", "জানু", "বেবি", "বেব", " বট", "মাকিমা", "makima"];
+        const startsWithBabyTrigger = babyTriggers.some(trigger => messageBody.toLowerCase().startsWith(trigger));
+        
+        if (isKnownCommand || startsWithBabyTrigger) {
+          // Allow only approve command for owner
+          if (commandName === "approve" && isOwner) {
+            // Allow owner to run approve command in unapproved group
+          } else {
+            // Block ALL other commands in unapproved group (regardless of usePrefix)
+            return;
+          }
         }
       }
 
