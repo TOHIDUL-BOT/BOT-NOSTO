@@ -708,9 +708,10 @@ async function startListening(api) {
   });
 }
 
-// Initialize PostgreSQL Database
+// Initialize PostgreSQL if DATABASE_URL is available
 async function initializePostgreSQL() {
   if (process.env.DATABASE_URL) {
+    console.log('🔗 DATABASE_URL found, initializing PostgreSQL...');
     try {
       const PostgreSQL = require('./includes/database/postgresql')();
       await PostgreSQL.initTables();
