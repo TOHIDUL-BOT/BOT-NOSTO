@@ -722,6 +722,9 @@ async function initializePostgreSQL() {
       const PostgreSQL = require('./includes/database/postgresql')();
       await PostgreSQL.initTables();
 
+      // Store PostgreSQL instance globally for other modules
+      global.PostgreSQL = PostgreSQL;
+
       // Load data from PostgreSQL to global cache
       const [users, threads, approvedGroups] = await Promise.all([
         PostgreSQL.getAllUsers(),

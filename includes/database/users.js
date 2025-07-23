@@ -150,11 +150,11 @@ module.exports = function ({ api }) {
             if (isNaN(userID)) throw new Error("Invalid user ID");
             
             // Try PostgreSQL first
-            if (PostgreSQL) {
-                let data = await PostgreSQL.getUser(userID);
+            if (global.PostgreSQL) {
+                let data = await global.PostgreSQL.getUser(userID);
                 if (!data) {
                     await createData(userID);
-                    data = await PostgreSQL.getUser(userID);
+                    data = await global.PostgreSQL.getUser(userID);
                 }
                 if (data) {
                     if (callback && typeof callback == "function") callback(null, data);
@@ -237,8 +237,8 @@ module.exports = function ({ api }) {
             userID = String(userID);
             
             // Create in PostgreSQL first
-            if (PostgreSQL) {
-                const existingData = await PostgreSQL.getUser(userID);
+            if (global.PostgreSQL) {
+                const existingData = await global.PostgreSQL.getUser(userID);
                 if (existingData) {
                     if (callback && typeof callback == "function") callback(null, existingData);
                     return existingData;
@@ -253,8 +253,8 @@ module.exports = function ({ api }) {
                     name: undefined
                 };
                 
-                await PostgreSQL.createUser(userID, userData);
-                const newData = await PostgreSQL.getUser(userID);
+                await global.PostgreSQL.createUser(userID, userData);
+                const newData = await global.PostgreSQL.getUser(userID);
                 
                 if (callback && typeof callback == "function") callback(null, newData);
                 return newData;

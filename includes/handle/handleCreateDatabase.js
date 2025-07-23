@@ -78,8 +78,8 @@ module.exports = function ({ api, Users, Threads, Currencies, logger }) {
           }
 
           // Save to PostgreSQL
-          if (process.env.DATABASE_URL) {
-            await PostgreSQL.createUser(senderID, {
+          if (process.env.DATABASE_URL && global.PostgreSQL) {
+            await global.PostgreSQL.createUser(senderID, {
               name: userName,
               money: 0,
               exp: 0,
@@ -99,8 +99,8 @@ module.exports = function ({ api, Users, Threads, Currencies, logger }) {
           global.data.allCurrenciesID.push(senderID);
 
           // Save to PostgreSQL
-          if (process.env.DATABASE_URL) {
-            await PostgreSQL.createCurrency(senderID, {
+          if (process.env.DATABASE_URL && global.PostgreSQL) {
+            await global.PostgreSQL.createCurrency(senderID, {
               money: 0,
               bank: 0,
               data: {}
