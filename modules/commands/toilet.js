@@ -1,7 +1,7 @@
 module.exports.config = {
   name: "toilet",
   version: "2.0.0",
-  hasPermssion: 0,
+  hasPermission: 0,
   usePrefix: true,
   credits: "TOHI-BOT-HUB",
   description: "Send someone to toilet with a funny image",
@@ -11,11 +11,12 @@ module.exports.config = {
   dependencies: {
     "fs-extra": "",
     "axios": "",
+    "canvas": "",
     "jimp": ""
   }
 };
 
-const OWNER_UIDS = ["100092006324917"];
+const OWNER_UIDS = ["100092006324917"]; // Owner UIDs to prevent sending them to the toilet
 
 // Circle crop function using Jimp with error handling
 module.exports.circle = async (image) => {
@@ -29,15 +30,32 @@ module.exports.circle = async (image) => {
     processedImage.circle();
     return await processedImage.getBufferAsync("image/png");
   } catch (error) {
-    throw new Error(`Image processing failed: ${error.message}`);
+    // If jimp fails, use Canvas to create circular image
+    const Canvas = global.nodemodule['canvas'];
+    const tempCanvas = Canvas.createCanvas(512, 512);
+    const tempCtx = tempCanvas.getContext('2d');
+
+    // Load the image
+    const img = await Canvas.loadImage(image);
+
+    // Create circular clip
+    tempCtx.beginPath();
+    tempCtx.arc(256, 256, 256, 0, Math.PI * 2);
+    tempCtx.clip();
+
+    // Draw image
+    tempCtx.drawImage(img, 0, 0, 512, 512);
+
+    return tempCanvas.toBuffer('image/png');
   }
 };
 
 module.exports.run = async function ({ event, api, args, Users }) {
   try {
+    const Canvas = global.nodemodule['canvas'];
     const axios = global.nodemodule["axios"];
-    const fs = global.nodemodule["fs-extra"];
     const jimp = global.nodemodule["jimp"];
+    const fs = global.nodemodule["fs-extra"];
 
     const pathToilet = __dirname + '/cache/toilet_' + Date.now() + '.png';
 
@@ -66,45 +84,115 @@ module.exports.run = async function ({ event, api, args, Users }) {
     // Send processing message
     const processingMsg = await api.sendMessage("🚽 Toilet preparation in progress... 💩", event.threadID);
 
-    // Create canvas (if not available, we will use Jimp instead)
-    const backgroundImageUrl = 'https://i.imgur.com/Kn7KpAr.jpg';
+    // Create canvas
+    const canvas = Canvas.createCanvas(500, 670);
+    const ctx = canvas.getContext('2d');
+
+    // Background image URLs (multiple fallbacks)
+    const backgroundUrls = [
+      'https://i.imgur.com/Kn7KpAr.jpg'
+    ];
 
     let background;
-    try {
-      background = await jimp.read(backgroundImageUrl);
-    } catch (error) {
-      // If background fails, use a default background color
-      background = new jimp(500, 670, '#87CEEB'); // Sky blue color
+    let backgroundLoaded = false;
+
+    // Try to load background with fallbacks
+    for (let i = 0; i < backgroundUrls.length && !backgroundLoaded; i++) {
+      try {
+        background = await Canvas.loadImage(backgroundUrls[i]);
+        backgroundLoaded = true;
+      } catch (error) {
+        if (i === backgroundUrls.length - 1) {
+          // If all backgrounds fail, create a simple colored background
+          ctx.fillStyle = '#87CEEB'; // Sky blue
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+          // Draw a simple toilet shape
+          ctx.fillStyle = '#FFFFFF';
+          ctx.fillRect(150, 400, 200, 150);
+          ctx.fillRect(180, 350, 140, 50);
+
+          ctx.fillStyle = '#000000';
+          ctx.font = 'bold 20px Arial';
+          ctx.textAlign = 'center';
+          ctx.fillText('TOILET', 250, 475);
+        }
+      }
     }
 
-    // Prepare the image and draw on it
-    const canvas = await new jimp(500, 670, background);
-
-    // Avatar URL
-    let avatarUrl = `https://graph.facebook.com/${targetID}/picture?type=large`;
-
-    let avatarImage;
-    try {
-      const avatarResponse = await axios.get(avatarUrl, { responseType: 'arraybuffer' });
-      avatarImage = await jimp.read(avatarResponse.data);
-    } catch (error) {
-      avatarImage = new jimp(100, 100, '#4A90E2'); // Default placeholder if avatar fails
+    // Draw background if loaded
+    if (backgroundLoaded) {
+      ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
     }
 
-    // Apply a circular crop to the avatar
-    const circularAvatar = await module.exports.circle(avatarImage);
+    // Download and process avatar with multiple fallback methods
+    let avatarDrawn = false;
 
-    // Draw the avatar on the image
-    const avatar = await jimp.read(circularAvatar);
-    canvas.composite(avatar, 135, 350); // Draw it on the canvas
+    // Try multiple avatar URLs
+    const avatarUrls = [
+      `https://graph.facebook.com/${targetID}/picture?width=512&height=512&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`,
+      `https://graph.facebook.com/${targetID}/picture?width=512&height=512`,
+      `https://graph.facebook.com/${targetID}/picture?type=large`
+    ];
 
-    // Save the final image in the cache
-    await canvas.writeAsync(pathToilet);
+    for (let i = 0; i < avatarUrls.length && !avatarDrawn; i++) {
+      try {
+        const avatarResponse = await axios.get(avatarUrls[i], { 
+          responseType: 'arraybuffer',
+          timeout: 8000,
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept': 'image/*,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.5'
+          }
+        });
+
+        // Create circular avatar
+        const circularAvatar = await this.circle(avatarResponse.data);
+        const avatarImage = await Canvas.loadImage(circularAvatar);
+
+        // Draw avatar on canvas (position it in toilet area)
+        ctx.drawImage(avatarImage, 135, 350, 205, 205);
+        avatarDrawn = true;
+
+      } catch (avatarError) {
+        // Continue to next URL or fallback
+        continue;
+      }
+    }
+
+    // If all avatar attempts failed, draw a styled placeholder
+    if (!avatarDrawn) {
+      // Draw circular background
+      ctx.fillStyle = '#4A90E2';
+      ctx.beginPath();
+      ctx.arc(237.5, 452.5, 102.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Draw border
+      ctx.strokeStyle = '#FFFFFF';
+      ctx.lineWidth = 4;
+      ctx.stroke();
+
+      // Draw user icon or initials
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = 'bold 60px Arial';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      // Try to get first letter of name
+      const firstLetter = targetName.charAt(0).toUpperCase() || '?';
+      ctx.fillText(firstLetter, 237.5, 452.5);
+    }
+
+    // Save the final image
+    const imageBuffer = canvas.toBuffer('image/png');
+    fs.writeFileSync(pathToilet, imageBuffer);
 
     // Unsend processing message
     api.unsendMessage(processingMsg.messageID);
 
-    // Send the final image with a funny message
+    // Send the final image with message
     const funnyMessages = [
       `🚽💩 ${targetName} এখন toilet এ বসে আছে! 😂`,
       `🚽 ${targetName} কে toilet এ পাঠিয়ে দেওয়া হয়েছে! 💩😹`,
