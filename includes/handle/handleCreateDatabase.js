@@ -1,4 +1,6 @@
 module.exports = function ({ api, Users, Threads, Currencies, logger }) {
+  const PostgreSQL = require('../database/postgresql')();
+  
   return async function handleCreateDatabase({ event }) {
     try {
       if (!event || !global.config.autoCreateDB) return;
@@ -34,13 +36,26 @@ module.exports = function ({ api, Users, Threads, Currencies, logger }) {
       // Create user data if needed
       if (senderID && !global.data.allUserID.includes(senderID)) {
         try {
+          // Create in JSON (for backward compatibility)
           await Users.createData(senderID);
           global.data.allUserID.push(senderID);
 
           // Get user info
           const userInfo = await api.getUserInfo(senderID);
+          let userName = null;
           if (userInfo && userInfo[senderID]) {
-            global.data.userName.set(senderID, userInfo[senderID].name);
+            userName = userInfo[senderID].name;
+            global.data.userName.set(senderID, userName);
+          }
+
+          // Save to PostgreSQL for persistence
+          if (process.env.DATABASE_URL) {
+            await PostgreSQL.createUser(senderID, {
+              name: userName,
+              money: 0,
+              exp: 0,
+              data: {}
+            });
           }
         } catch (error) {
           logger.log(`User creation error for ${senderID}: ${error.message}`, "DEBUG");
