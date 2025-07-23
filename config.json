@@ -142,7 +142,7 @@
     "WOLFRAM": "T8J8YV-H265UQ762K"
   },
   "DATABASE": {
-    "DATABASE_URL": "",
+    "DATABASE_URL": "psql 'postgresql://neondb_owner:npg_enDfV6Kst5Na@ep-holy-pond-aeb85mbf-pooler.c-2.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require'",
     "enabled": false,
     "info": "Add your PostgreSQL database URL here. Example: postgresql://username:password@host:port/database"
   }
