@@ -713,8 +713,11 @@ async function startListening(api) {
 
 // Initialize PostgreSQL if DATABASE_URL is available
 async function initializePostgreSQL() {
-  if (process.env.DATABASE_URL) {
-    console.log('🔗 DATABASE_URL found, initializing PostgreSQL...');
+  const config = require('./config.json');
+  const databaseUrl = config.DATABASE?.DATABASE_URL || process.env.DATABASE_URL;
+  
+  if (databaseUrl && config.DATABASE?.enabled !== false) {
+    console.log('🔗 DATABASE_URL found in config.json, initializing PostgreSQL...');
     try {
       const PostgreSQL = require('./includes/database/postgresql')();
       await PostgreSQL.initTables();

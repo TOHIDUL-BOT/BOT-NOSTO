@@ -2,8 +2,17 @@
 const { Pool } = require('pg');
 
 module.exports = function () {
+    // Get DATABASE_URL from config.json or environment variable
+    const config = require('../../config.json');
+    const databaseUrl = config.DATABASE?.DATABASE_URL || process.env.DATABASE_URL;
+    
+    if (!databaseUrl) {
+        console.log('⚠️ No DATABASE_URL found in config.json or environment variables');
+        return null;
+    }
+
     const pool = new Pool({
-        connectionString: process.env.DATABASE_URL,
+        connectionString: databaseUrl,
         ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
     });
 

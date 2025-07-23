@@ -140,5 +140,10 @@
   },
   "math": {
     "WOLFRAM": "T8J8YV-H265UQ762K"
+  },
+  "DATABASE": {
+    "DATABASE_URL": "",
+    "enabled": false,
+    "info": "Add your PostgreSQL database URL here. Example: postgresql://username:password@host:port/database"
   }
 }

@@ -1,4 +1,3 @@
-
 const OWNER_ID = "100092006324917";
 
 module.exports.config = {
@@ -15,7 +14,7 @@ module.exports.config = {
 
 module.exports.run = async function({ api, event, args }) {
   const { threadID, messageID, senderID } = event;
-  
+
   if (senderID !== OWNER_ID) {
     return api.sendMessage(`⛔️ শুধুমাত্র owner (${OWNER_ID}) এই কমান্ড ব্যবহার করতে পারবেন!`, threadID, messageID);
   }
@@ -27,8 +26,11 @@ module.exports.run = async function({ api, event, args }) {
   try {
     switch (command) {
       case "status":
-        if (!process.env.DATABASE_URL) {
-          return api.sendMessage("❌ DATABASE_URL নেই! PostgreSQL সংযুক্ত নয়।", threadID, messageID);
+        const config = require('../../config.json');
+        const databaseUrl = config.DATABASE?.DATABASE_URL || process.env.DATABASE_URL;
+
+        if (!databaseUrl) {
+          return api.sendMessage("❌ DATABASE_URL config.json অথবা environment এ নেই!", threadID, messageID);
         }
 
         try {
@@ -59,7 +61,7 @@ module.exports.run = async function({ api, event, args }) {
 
       case "backup":
         api.sendMessage("🔄 সব ডাটা PostgreSQL এ backup করা হচ্ছে...", threadID, messageID);
-        
+
         const backupResult = await dataSync.backupToPostgreSQL();
         if (backupResult) {
           return api.sendMessage("✅ সব ডাটা সফলভাবে PostgreSQL এ backup হয়েছে!", threadID, messageID);
@@ -69,7 +71,7 @@ module.exports.run = async function({ api, event, args }) {
 
       case "sync":
         api.sendMessage("🔄 PostgreSQL থেকে সব ডাটা sync করা হচ্ছে...", threadID, messageID);
-        
+
         const syncResult = await dataSync.syncFromPostgreSQL();
         if (syncResult) {
           return api.sendMessage("✅ সব ডাটা সফলভাবে sync হয়েছে!", threadID, messageID);
@@ -87,7 +89,7 @@ module.exports.run = async function({ api, event, args }) {
           const fs = require('fs').promises;
           const exportPath = `./backup_${Date.now()}.json`;
           await fs.writeFile(exportPath, JSON.stringify(exportData, null, 2));
-          
+
           return api.sendMessage(`✅ সব ডাটা এক্সপোর্ট হয়েছে: ${exportPath}
 
 📊 এক্সপোর্ট ডাটা:

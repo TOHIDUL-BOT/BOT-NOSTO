@@ -10,8 +10,11 @@ class DataSync {
   // Sync all data from PostgreSQL to local files and global cache
   async syncFromPostgreSQL() {
     try {
-      if (!process.env.DATABASE_URL) {
-        console.log('⚠️ No DATABASE_URL found. Skipping PostgreSQL sync.');
+      const config = require('../config.json');
+      const databaseUrl = config.DATABASE?.DATABASE_URL || process.env.DATABASE_URL;
+      
+      if (!databaseUrl) {
+        console.log('⚠️ No DATABASE_URL found in config.json or environment. Skipping PostgreSQL sync.');
         return false;
       }
 
@@ -101,8 +104,11 @@ class DataSync {
   // Backup current data to PostgreSQL
   async backupToPostgreSQL() {
     try {
-      if (!process.env.DATABASE_URL) {
-        console.log('⚠️ No DATABASE_URL found. Skipping backup.');
+      const config = require('../config.json');
+      const databaseUrl = config.DATABASE?.DATABASE_URL || process.env.DATABASE_URL;
+      
+      if (!databaseUrl) {
+        console.log('⚠️ No DATABASE_URL found in config.json or environment. Skipping backup.');
         return false;
       }
 
