@@ -63,8 +63,12 @@ module.exports = function ({ api }) {
                     if (!usersData[userID]) {
                         await createData(userID);
                     }
-                    usersData[userID].name = name;
-                    await saveData(usersData);
+                    
+                    // Make sure usersData[userID] exists before setting name
+                    if (usersData[userID]) {
+                        usersData[userID].name = name;
+                        await saveData(usersData);
+                    }
                     
                     return name;
                 }
@@ -194,7 +198,15 @@ module.exports = function ({ api }) {
             
             // Fallback to JSON
             if (global.config.autoCreateDB) {
-                if (!usersData.hasOwnProperty(userID)) throw new Error(`User ID: ${userID} does not exist in Database`);
+                if (!usersData.hasOwnProperty(userID)) {
+                    // Auto-create if not exists
+                    await createData(userID);
+                }
+            }
+            
+            // Ensure user data exists
+            if (!usersData[userID]) {
+                await createData(userID);
             }
             
             const currentData = usersData[userID] || {};
