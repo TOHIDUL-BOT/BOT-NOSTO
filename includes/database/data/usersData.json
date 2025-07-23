@@ -1,14 +1,14 @@
 {
     "100092006324917": {
         "userID": "100092006324917",
-        "money": 1000000000,
+        "money": 0,
         "exp": 0,
         "createTime": {
-            "timestamp": 1753288099834
+            "timestamp": 1753288317490
         },
         "data": {
-            "timestamp": 1753288099834
+            "timestamp": 1753288317490
         },
-        "lastUpdate": 1753288101487
+        "lastUpdate": 1753288383671
     }
 }
