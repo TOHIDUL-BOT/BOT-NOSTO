@@ -29,7 +29,9 @@
     "enabled": false,
     "autoApproveMessage": false,
     "note": "Approval system moved to PostgreSQL database",
-    "approvedGroups": []
+    "approvedGroups": [
+      "9826242237455305"
+    ]
   },
   "DESIGN": {
     "Title": "TOHI-BOT-HUB",
@@ -130,7 +132,9 @@
     "info": "Add your PostgreSQL database URL here. Example: postgresql://username:password@host:port/database"
   },
   "APPROVAL": {
-    "approvedGroups": [],
+    "approvedGroups": [
+      "9826242237455305"
+    ],
     "pendingGroups": [],
     "rejectedGroups": []
   }
