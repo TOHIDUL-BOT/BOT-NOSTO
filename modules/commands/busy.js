@@ -12,14 +12,27 @@ module.exports.config = {
 
 module.exports.run = async function({ api, event, args, Users }) {
   const { senderID, threadID, messageID } = event;
+  const PostgreSQL = require('../../includes/database/postgresql')();
+
   try {
     if (args[0] && args[0].toLowerCase() === "off") {
       await Users.setData(senderID, { busy: false });
+
+      // Update PostgreSQL
+      if (process.env.DATABASE_URL) {
+        await PostgreSQL.updateUser(senderID, { busy: false });
+      }
+
       return api.sendMessage("✅ Busy Mode বন্ধ হয়েছে", threadID, messageID);
     }
     const reason = args.join(" ");
     const busyData = reason || true;
     await Users.setData(senderID, { busy: busyData });
+
+    // Update PostgreSQL
+    if (process.env.DATABASE_URL) {
+      await PostgreSQL.updateUser(senderID, { busy: busyData });
+    }
 
     let userName = "";
     try {
@@ -46,11 +59,22 @@ module.exports.handleEvent = async function({ api, event, Users }) {
   const { type, threadID, mentions } = event;
   if (type !== "message" && type !== "message_reply") return;
 
-  // যদি কেউ mention করে, তখন চেক করবে
+  const PostgreSQL = require('../../includes/database/postgresql')();
+
+  // যদি কেউ mention করে, তখন চেক করবে  
   if (mentions && Object.keys(mentions).length > 0) {
     for (const userID of Object.keys(mentions)) {
       try {
-        const userData = await Users.getData(userID);
+        let userData = await Users.getData(userID);
+
+        // Also check PostgreSQL for busy status
+        if (process.env.DATABASE_URL) {
+          const pgUser = await PostgreSQL.getUser(userID);
+          if (pgUser && pgUser.busy && !userData?.busy) {
+            userData = { ...userData, busy: pgUser.busy };
+          }
+        }
+
         if (userData && userData.busy) {
           // Full name বের করো (uid না)
           let userName = "";

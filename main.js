@@ -708,7 +708,83 @@ async function startListening(api) {
   });
 }
 
-// Database initialization
+// Initialize PostgreSQL Database
+async function initializePostgreSQL() {
+  if (process.env.DATABASE_URL) {
+    try {
+      const PostgreSQL = require('./includes/database/postgresql')();
+      await PostgreSQL.initTables();
+
+      // Load data from PostgreSQL to global cache
+      const [users, threads, approvedGroups] = await Promise.all([
+        PostgreSQL.getAllUsers(),
+        PostgreSQL.getAllThreads(),
+        PostgreSQL.getApprovedGroups()
+      ]);
+
+      // Populate global data from PostgreSQL
+      users.forEach(user => {
+        if (!global.data.allUserID.includes(user.user_id)) {
+          global.data.allUserID.push(user.user_id);
+        }
+        if (user.name) {
+          global.data.userName.set(user.user_id, user.name);
+        }
+        if (user.banned) {
+          global.data.userBanned.set(user.user_id, {
+            reason: user.ban_reason || "",
+            dateAdded: user.created_at || ""
+          });
+        }
+      });
+
+      threads.forEach(thread => {
+        if (!global.data.allThreadID.includes(thread.thread_id)) {
+          global.data.allThreadID.push(thread.thread_id);
+        }
+        global.data.threadData.set(thread.thread_id, thread.data || {});
+        global.data.threadInfo.set(thread.thread_id, thread.thread_info || {});
+
+        if (thread.banned) {
+          global.data.threadBanned.set(thread.thread_id, {
+            reason: thread.ban_reason || "",
+            dateAdded: thread.created_at || ""
+          });
+        }
+        if (thread.nsfw) {
+          global.data.threadAllowNSFW.push(thread.thread_id);
+        }
+        if (thread.command_banned && thread.command_banned.length > 0) {
+          global.data.commandBanned.set(thread.thread_id, thread.command_banned);
+        }
+      });
+
+      // Update config.json with approved groups
+      if (approvedGroups.length > 0) {
+        const fs = require('fs').promises;
+        try {
+          const configPath = './config.json';
+          const configData = await fs.readFile(configPath, 'utf8');
+          const config = JSON.parse(configData);
+
+          config.APPROVAL = config.APPROVAL || {};
+          config.APPROVAL.approvedGroups = approvedGroups.map(g => g.thread_id);
+
+          await fs.writeFile(configPath, JSON.stringify(config, null, 2));
+        } catch (error) {
+          logger.log(`Could not update config.json: ${error.message}`, "DEBUG");
+        }
+      }
+
+      logger.log(`✅ PostgreSQL loaded: ${users.length} users, ${threads.length} threads, ${approvedGroups.length} approved groups`, "DATABASE");
+    } catch (error) {
+      logger.log(`PostgreSQL initialization error: ${error.message}`, "ERROR");
+    }
+  } else {
+    logger.log(`⚠️ No DATABASE_URL found. PostgreSQL not initialized.`, "WARNING");
+  }
+}
+
 (async () => {
   try {
     console.log(tertiary(`\n──DATABASE─●`));

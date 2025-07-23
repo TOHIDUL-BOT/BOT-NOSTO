@@ -7,10 +7,10 @@ module.exports = function () {
         ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
     });
 
-    // Initialize tables
+    // Initialize all tables
     async function initTables() {
         try {
-            // Users table
+            // Users table with complete data
             await pool.query(`
                 CREATE TABLE IF NOT EXISTS users (
                     user_id VARCHAR(50) PRIMARY KEY,
@@ -20,12 +20,13 @@ module.exports = function () {
                     data JSONB DEFAULT '{}',
                     banned BOOLEAN DEFAULT false,
                     ban_reason TEXT,
+                    busy JSONB DEFAULT 'false',
                     created_at TIMESTAMP DEFAULT NOW(),
                     updated_at TIMESTAMP DEFAULT NOW()
                 )
             `);
 
-            // Threads table
+            // Threads table with complete data
             await pool.query(`
                 CREATE TABLE IF NOT EXISTS threads (
                     thread_id VARCHAR(50) PRIMARY KEY,
@@ -34,6 +35,21 @@ module.exports = function () {
                     banned BOOLEAN DEFAULT false,
                     data JSONB DEFAULT '{}',
                     thread_info JSONB DEFAULT '{}',
+                    member_count INTEGER DEFAULT 0,
+                    nsfw BOOLEAN DEFAULT false,
+                    command_banned JSONB DEFAULT '[]',
+                    created_at TIMESTAMP DEFAULT NOW(),
+                    updated_at TIMESTAMP DEFAULT NOW()
+                )
+            `);
+
+            // Currencies table
+            await pool.query(`
+                CREATE TABLE IF NOT EXISTS currencies (
+                    user_id VARCHAR(50) PRIMARY KEY,
+                    money BIGINT DEFAULT 0,
+                    bank BIGINT DEFAULT 0,
+                    data JSONB DEFAULT '{}',
                     created_at TIMESTAMP DEFAULT NOW(),
                     updated_at TIMESTAMP DEFAULT NOW()
                 )
@@ -43,9 +59,20 @@ module.exports = function () {
             await pool.query(`
                 CREATE TABLE IF NOT EXISTS approved_groups (
                     thread_id VARCHAR(50) PRIMARY KEY,
+                    thread_name VARCHAR(255),
                     approved_by VARCHAR(50),
                     approved_at TIMESTAMP DEFAULT NOW(),
-                    status VARCHAR(20) DEFAULT 'approved'
+                    status VARCHAR(20) DEFAULT 'approved',
+                    member_count INTEGER DEFAULT 0
+                )
+            `);
+
+            // Bot settings and data
+            await pool.query(`
+                CREATE TABLE IF NOT EXISTS bot_settings (
+                    key VARCHAR(100) PRIMARY KEY,
+                    value JSONB,
+                    updated_at TIMESTAMP DEFAULT NOW()
                 )
             `);
 
@@ -59,10 +86,10 @@ module.exports = function () {
     async function createUser(userID, userData = {}) {
         try {
             const query = `
-                INSERT INTO users (user_id, name, money, exp, data)
-                VALUES ($1, $2, $3, $4, $5)
+                INSERT INTO users (user_id, name, money, exp, data, busy)
+                VALUES ($1, $2, $3, $4, $5, $6)
                 ON CONFLICT (user_id) DO UPDATE SET
-                    name = EXCLUDED.name,
+                    name = COALESCE(EXCLUDED.name, users.name),
                     updated_at = NOW()
                 RETURNING *
             `;
@@ -71,7 +98,8 @@ module.exports = function () {
                 userData.name || null,
                 userData.money || 0,
                 userData.exp || 0,
-                JSON.stringify(userData.data || {})
+                JSON.stringify(userData.data || {}),
+                JSON.stringify(userData.busy || false)
             ];
             const result = await pool.query(query, values);
             return result.rows[0];
@@ -84,7 +112,14 @@ module.exports = function () {
     async function getUser(userID) {
         try {
             const result = await pool.query('SELECT * FROM users WHERE user_id = $1', [userID]);
-            return result.rows[0] || null;
+            if (result.rows[0]) {
+                const user = result.rows[0];
+                // Parse JSON fields
+                user.data = typeof user.data === 'string' ? JSON.parse(user.data) : user.data;
+                user.busy = typeof user.busy === 'string' ? JSON.parse(user.busy) : user.busy;
+                return user;
+            }
+            return null;
         } catch (error) {
             console.error('Error getting user:', error);
             return null;
@@ -93,16 +128,27 @@ module.exports = function () {
 
     async function updateUser(userID, updates) {
         try {
-            const setClause = Object.keys(updates).map((key, index) => 
-                `${key} = $${index + 2}`
-            ).join(', ');
-            
+            const setFields = [];
+            const values = [userID];
+            let valueIndex = 2;
+
+            Object.keys(updates).forEach(key => {
+                if (key === 'data' || key === 'busy') {
+                    setFields.push(`${key} = $${valueIndex}`);
+                    values.push(JSON.stringify(updates[key]));
+                } else {
+                    setFields.push(`${key} = $${valueIndex}`);
+                    values.push(updates[key]);
+                }
+                valueIndex++;
+            });
+
             const query = `
-                UPDATE users SET ${setClause}, updated_at = NOW()
+                UPDATE users SET ${setFields.join(', ')}, updated_at = NOW()
                 WHERE user_id = $1
                 RETURNING *
             `;
-            const values = [userID, ...Object.values(updates)];
+            
             const result = await pool.query(query, values);
             return result.rows[0];
         } catch (error) {
@@ -111,14 +157,29 @@ module.exports = function () {
         }
     }
 
+    async function getAllUsers() {
+        try {
+            const result = await pool.query('SELECT * FROM users');
+            return result.rows.map(user => {
+                user.data = typeof user.data === 'string' ? JSON.parse(user.data) : user.data;
+                user.busy = typeof user.busy === 'string' ? JSON.parse(user.busy) : user.busy;
+                return user;
+            });
+        } catch (error) {
+            console.error('Error getting all users:', error);
+            return [];
+        }
+    }
+
     // Thread functions
     async function createThread(threadID, threadData = {}) {
         try {
             const query = `
-                INSERT INTO threads (thread_id, thread_name, approved, data, thread_info)
-                VALUES ($1, $2, $3, $4, $5)
+                INSERT INTO threads (thread_id, thread_name, approved, data, thread_info, member_count, nsfw, command_banned)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
                 ON CONFLICT (thread_id) DO UPDATE SET
-                    thread_name = EXCLUDED.thread_name,
+                    thread_name = COALESCE(EXCLUDED.thread_name, threads.thread_name),
+                    member_count = COALESCE(EXCLUDED.member_count, threads.member_count),
                     updated_at = NOW()
                 RETURNING *
             `;
@@ -127,7 +188,10 @@ module.exports = function () {
                 threadData.threadName || null,
                 threadData.approved || false,
                 JSON.stringify(threadData.data || {}),
-                JSON.stringify(threadData.threadInfo || {})
+                JSON.stringify(threadData.threadInfo || {}),
+                threadData.memberCount || 0,
+                threadData.nsfw || false,
+                JSON.stringify(threadData.commandBanned || [])
             ];
             const result = await pool.query(query, values);
             return result.rows[0];
@@ -140,14 +204,107 @@ module.exports = function () {
     async function getThread(threadID) {
         try {
             const result = await pool.query('SELECT * FROM threads WHERE thread_id = $1', [threadID]);
-            return result.rows[0] || null;
+            if (result.rows[0]) {
+                const thread = result.rows[0];
+                thread.data = typeof thread.data === 'string' ? JSON.parse(thread.data) : thread.data;
+                thread.thread_info = typeof thread.thread_info === 'string' ? JSON.parse(thread.thread_info) : thread.thread_info;
+                thread.command_banned = typeof thread.command_banned === 'string' ? JSON.parse(thread.command_banned) : thread.command_banned;
+                return thread;
+            }
+            return null;
         } catch (error) {
             console.error('Error getting thread:', error);
             return null;
         }
     }
 
-    async function approveGroup(threadID, approvedBy) {
+    async function getAllThreads() {
+        try {
+            const result = await pool.query('SELECT * FROM threads');
+            return result.rows.map(thread => {
+                thread.data = typeof thread.data === 'string' ? JSON.parse(thread.data) : thread.data;
+                thread.thread_info = typeof thread.thread_info === 'string' ? JSON.parse(thread.thread_info) : thread.thread_info;
+                thread.command_banned = typeof thread.command_banned === 'string' ? JSON.parse(thread.command_banned) : thread.command_banned;
+                return thread;
+            });
+        } catch (error) {
+            console.error('Error getting all threads:', error);
+            return [];
+        }
+    }
+
+    // Currency functions
+    async function createCurrency(userID, currencyData = {}) {
+        try {
+            const query = `
+                INSERT INTO currencies (user_id, money, bank, data)
+                VALUES ($1, $2, $3, $4)
+                ON CONFLICT (user_id) DO UPDATE SET
+                    updated_at = NOW()
+                RETURNING *
+            `;
+            const values = [
+                userID,
+                currencyData.money || 0,
+                currencyData.bank || 0,
+                JSON.stringify(currencyData.data || {})
+            ];
+            const result = await pool.query(query, values);
+            return result.rows[0];
+        } catch (error) {
+            console.error('Error creating currency:', error);
+            return false;
+        }
+    }
+
+    async function getCurrency(userID) {
+        try {
+            const result = await pool.query('SELECT * FROM currencies WHERE user_id = $1', [userID]);
+            if (result.rows[0]) {
+                const currency = result.rows[0];
+                currency.data = typeof currency.data === 'string' ? JSON.parse(currency.data) : currency.data;
+                return currency;
+            }
+            return null;
+        } catch (error) {
+            console.error('Error getting currency:', error);
+            return null;
+        }
+    }
+
+    async function updateCurrency(userID, updates) {
+        try {
+            const setFields = [];
+            const values = [userID];
+            let valueIndex = 2;
+
+            Object.keys(updates).forEach(key => {
+                if (key === 'data') {
+                    setFields.push(`${key} = $${valueIndex}`);
+                    values.push(JSON.stringify(updates[key]));
+                } else {
+                    setFields.push(`${key} = $${valueIndex}`);
+                    values.push(updates[key]);
+                }
+                valueIndex++;
+            });
+
+            const query = `
+                UPDATE currencies SET ${setFields.join(', ')}, updated_at = NOW()
+                WHERE user_id = $1
+                RETURNING *
+            `;
+            
+            const result = await pool.query(query, values);
+            return result.rows[0];
+        } catch (error) {
+            console.error('Error updating currency:', error);
+            return false;
+        }
+    }
+
+    // Approval functions
+    async function approveGroup(threadID, threadName, approvedBy, memberCount = 0) {
         try {
             // Update threads table
             await pool.query(
@@ -157,12 +314,13 @@ module.exports = function () {
             
             // Add to approved_groups table
             await pool.query(`
-                INSERT INTO approved_groups (thread_id, approved_by)
-                VALUES ($1, $2)
+                INSERT INTO approved_groups (thread_id, thread_name, approved_by, member_count)
+                VALUES ($1, $2, $3, $4)
                 ON CONFLICT (thread_id) DO UPDATE SET
                     approved_by = EXCLUDED.approved_by,
-                    approved_at = NOW()
-            `, [threadID, approvedBy]);
+                    approved_at = NOW(),
+                    member_count = EXCLUDED.member_count
+            `, [threadID, threadName, approvedBy, memberCount]);
             
             return true;
         } catch (error) {
@@ -174,25 +332,103 @@ module.exports = function () {
     async function getApprovedGroups() {
         try {
             const result = await pool.query(`
-                SELECT thread_id FROM approved_groups 
+                SELECT * FROM approved_groups 
                 WHERE status = 'approved'
+                ORDER BY approved_at DESC
             `);
-            return result.rows.map(row => row.thread_id);
+            return result.rows;
         } catch (error) {
             console.error('Error getting approved groups:', error);
             return [];
         }
     }
 
+    async function removeApprovedGroup(threadID) {
+        try {
+            await pool.query('UPDATE threads SET approved = false WHERE thread_id = $1', [threadID]);
+            await pool.query('DELETE FROM approved_groups WHERE thread_id = $1', [threadID]);
+            return true;
+        } catch (error) {
+            console.error('Error removing approved group:', error);
+            return false;
+        }
+    }
+
+    // Bot settings functions
+    async function setBotSetting(key, value) {
+        try {
+            await pool.query(`
+                INSERT INTO bot_settings (key, value)
+                VALUES ($1, $2)
+                ON CONFLICT (key) DO UPDATE SET
+                    value = EXCLUDED.value,
+                    updated_at = NOW()
+            `, [key, JSON.stringify(value)]);
+            return true;
+        } catch (error) {
+            console.error('Error setting bot setting:', error);
+            return false;
+        }
+    }
+
+    async function getBotSetting(key) {
+        try {
+            const result = await pool.query('SELECT value FROM bot_settings WHERE key = $1', [key]);
+            if (result.rows[0]) {
+                return JSON.parse(result.rows[0].value);
+            }
+            return null;
+        } catch (error) {
+            console.error('Error getting bot setting:', error);
+            return null;
+        }
+    }
+
+    // Backup and restore functions
+    async function backupAllData() {
+        try {
+            const users = await getAllUsers();
+            const threads = await getAllThreads();
+            const currencies = await pool.query('SELECT * FROM currencies');
+            const approvedGroups = await getApprovedGroups();
+            
+            return {
+                users,
+                threads,
+                currencies: currencies.rows,
+                approvedGroups,
+                backupDate: new Date().toISOString()
+            };
+        } catch (error) {
+            console.error('Error backing up data:', error);
+            return null;
+        }
+    }
+
     return {
         pool,
         initTables,
+        // User functions
         createUser,
         getUser,
         updateUser,
+        getAllUsers,
+        // Thread functions
         createThread,
         getThread,
+        getAllThreads,
+        // Currency functions
+        createCurrency,
+        getCurrency,
+        updateCurrency,
+        // Approval functions
         approveGroup,
-        getApprovedGroups
+        getApprovedGroups,
+        removeApprovedGroup,
+        // Bot settings
+        setBotSetting,
+        getBotSetting,
+        // Backup
+        backupAllData
     };
 };
