@@ -770,9 +770,9 @@ async function initializePostgreSQL() {
       });
 
       // Sync approval data from database to config.json
-      if (postgreSQL && postgreSQL.syncApprovalToConfig) {
+      if (PostgreSQL && PostgreSQL.syncApprovalToConfig) {
         try {
-          await postgreSQL.syncApprovalToConfig();
+          await PostgreSQL.syncApprovalToConfig();
           console.log('✅ Approval data synced from database to config.json');
         } catch (syncError) {
           console.error('❌ Error syncing approval data:', syncError);
