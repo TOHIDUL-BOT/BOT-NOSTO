@@ -39,7 +39,7 @@ module.exports.run = async function ({ api, event, args }) {
     return api.sendMessage(`⛔️ কেবল owner (${OWNER_ID}) approval দিতে পারবেন!`, event.threadID, event.messageID);
   }
 
-  const { threadID, messageID } = event;
+  const { threadID, messageID, senderID } = event;
 
   let config = loadConfig();
 
@@ -178,9 +178,35 @@ module.exports.run = async function ({ api, event, args }) {
           config.AUTO_APPROVE.approvedGroups.push(targetID);
         }
         
+        // Save to PostgreSQL database first
+        if (global.database && global.database.approveGroup) {
+          try {
+            let threadName = "Unknown Group";
+            let memberCount = 0;
+
+            // Try to get thread info
+            try {
+              const threadInfo = await api.getThreadInfo(targetID);
+              threadName = threadInfo.threadName || threadName;
+              memberCount = threadInfo.participantIDs?.length || 0;
+            } catch (infoError) {
+              console.log('Could not get thread info:', infoError.message);
+            }
+
+            const dbResult = await global.database.approveGroup(targetID, threadName, senderID, memberCount);
+            if (dbResult) {
+              console.log(`✅ Group ${targetID} approved in database`);
+              // Sync database to config.json
+              await global.database.syncApprovalToConfig();
+            }
+          } catch (dbError) {
+            console.error('Database approval error:', dbError);
+          }
+        }
+
         // Save config immediately
         saveConfig(config);
-        
+
         // Also update global config cache
         if (global.config) {
           global.config.APPROVAL = config.APPROVAL;

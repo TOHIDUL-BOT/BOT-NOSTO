@@ -36,24 +36,39 @@ module.exports.run = async function({ api, event }) {
     
     if (!isKnownCommand) return;
     
-    const configPath = path.join(__dirname, '../../config.json');
-    let config = {};
-    
-    try {
-      const configData = fs.readFileSync(configPath, 'utf8');
-      config = JSON.parse(configData);
-    } catch (error) {
-      return;
-    }
-    
-    // Initialize approval system if not exists
-    if (!config.APPROVAL) return;
-    
     const threadID = String(event.threadID);
     const senderID = String(event.senderID);
     const isOwner = global.config.ADMINBOT && global.config.ADMINBOT.includes(senderID);
-    const isApproved = config.APPROVAL.approvedGroups.includes(threadID);
-    const isPending = config.APPROVAL.pendingGroups.includes(threadID);
+    
+    // Check approval status from database first
+    let isApproved = false;
+    let isPending = false;
+    
+    if (global.database && global.database.isGroupApproved) {
+      try {
+        isApproved = await global.database.isGroupApproved(threadID);
+      } catch (dbError) {
+        console.error('Database approval check error:', dbError);
+      }
+    }
+    
+    // Fallback to config.json if database check fails
+    if (!isApproved) {
+      const configPath = path.join(__dirname, '../../config.json');
+      let config = {};
+      
+      try {
+        const configData = fs.readFileSync(configPath, 'utf8');
+        config = JSON.parse(configData);
+        
+        if (config.APPROVAL) {
+          isApproved = config.APPROVAL.approvedGroups.includes(threadID);
+          isPending = config.APPROVAL.pendingGroups.includes(threadID);
+        }
+      } catch (error) {
+        return;
+      }
+    }
     
     // Reload config in real-time to check for latest approvals
     try {

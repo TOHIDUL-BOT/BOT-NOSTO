@@ -90,9 +90,24 @@ module.exports = function ({ api, Users, Threads, Currencies, logger, botSetting
         approvalConfig.APPROVAL = { approvedGroups: [], pendingGroups: [], rejectedGroups: [] };
       }
 
-      // Unapproved group block logic
+      // Unapproved group block logic - Check database first
       const isOwner = global.config.ADMINBOT && global.config.ADMINBOT.includes(senderID);
-      const isApproved = approvalConfig.APPROVAL.approvedGroups.includes(String(threadID));
+      let isApproved = false;
+      
+      // Check from database first
+      if (global.database && global.database.isGroupApproved) {
+        try {
+          isApproved = await global.database.isGroupApproved(String(threadID));
+        } catch (dbError) {
+          console.error('Database approval check error in handleCommand:', dbError);
+        }
+      }
+      
+      // Fallback to config if database check fails
+      if (!isApproved) {
+        isApproved = approvalConfig.APPROVAL.approvedGroups.includes(String(threadID));
+      }
+      
       const threadIsGroup = event.threadID && event.threadID !== event.senderID;
       const messageBody = event.body.trim();
 

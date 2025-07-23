@@ -766,6 +766,16 @@ async function initializePostgreSQL() {
         }
       });
 
+      // Sync approval data from database to config.json
+      if (postgreSQL && postgreSQL.syncApprovalToConfig) {
+        try {
+          await postgreSQL.syncApprovalToConfig();
+          console.log('✅ Approval data synced from database to config.json');
+        } catch (syncError) {
+          console.error('❌ Error syncing approval data:', syncError);
+        }
+      }
+
       // Update config.json with approved groups
       if (approvedGroups.length > 0) {
         const fs = require('fs').promises;

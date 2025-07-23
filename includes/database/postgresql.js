@@ -338,6 +338,87 @@ module.exports = function () {
         }
     }
 
+    async function isGroupApproved(threadID) {
+        try {
+            const result = await pool.query(
+                'SELECT approved FROM threads WHERE thread_id = $1',
+                [threadID]
+            );
+            return result.rows.length > 0 ? result.rows[0].approved : false;
+        } catch (error) {
+            console.error('Error checking group approval:', error);
+            return false;
+        }
+    }
+
+    async function addToPendingApproval(threadID, threadName, memberCount = 0) {
+        try {
+            await pool.query(`
+                INSERT INTO threads (thread_id, thread_name, approved, member_count, data)
+                VALUES ($1, $2, false, $3, '{"status": "pending"}')
+                ON CONFLICT (thread_id) DO UPDATE SET
+                    thread_name = EXCLUDED.thread_name,
+                    member_count = EXCLUDED.member_count,
+                    data = jsonb_set(COALESCE(threads.data, '{}'), '{status}', '"pending"'),
+                    updated_at = NOW()
+            `, [threadID, threadName, memberCount]);
+            
+            return true;
+        } catch (error) {
+            console.error('Error adding to pending approval:', error);
+            return false;
+        }
+    }
+
+    async function syncApprovalToConfig() {
+        try {
+            const approvedGroups = await pool.query(
+                'SELECT thread_id FROM threads WHERE approved = true ORDER BY updated_at DESC'
+            );
+            
+            const pendingGroups = await pool.query(
+                'SELECT thread_id FROM threads WHERE approved = false AND data->>\'status\' = \'pending\' ORDER BY updated_at DESC'
+            );
+
+            const fs = require('fs');
+            const path = require('path');
+            const configPath = path.join(__dirname, '../../config.json');
+            
+            let config = {};
+            try {
+                const configData = fs.readFileSync(configPath, 'utf8');
+                config = JSON.parse(configData);
+            } catch (error) {
+                console.error('Error reading config:', error);
+                return false;
+            }
+
+            // Initialize APPROVAL if not exists
+            if (!config.APPROVAL) {
+                config.APPROVAL = { approvedGroups: [], pendingGroups: [], rejectedGroups: [] };
+            }
+
+            // Update approved groups
+            config.APPROVAL.approvedGroups = approvedGroups.rows.map(row => row.thread_id);
+            config.APPROVAL.pendingGroups = pendingGroups.rows.map(row => row.thread_id);
+
+            // Also update AUTO_APPROVE for compatibility
+            if (!config.AUTO_APPROVE) {
+                config.AUTO_APPROVE = { enabled: true, approvedGroups: [] };
+            }
+            config.AUTO_APPROVE.approvedGroups = config.APPROVAL.approvedGroups;
+
+            // Save config
+            fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+            console.log('✅ Config.json synced with database approval data');
+            
+            return true;
+        } catch (error) {
+            console.error('Error syncing approval to config:', error);
+            return false;
+        }
+    }
+
     async function getApprovedGroups() {
         try {
             const result = await pool.query(`
@@ -434,6 +515,9 @@ module.exports = function () {
         approveGroup,
         getApprovedGroups,
         removeApprovedGroup,
+        isGroupApproved,
+        addToPendingApproval,
+        syncApprovalToConfig,
         // Bot settings
         setBotSetting,
         getBotSetting,
