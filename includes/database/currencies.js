@@ -28,22 +28,50 @@ module.exports = function ({ models, Users, PostgreSQL }) {
             userID = String(userID);
             if (isNaN(userID)) throw new Error("Invalid user ID");
 
+            // Try PostgreSQL first
+            if (PostgreSQL) {
+                let data = await PostgreSQL.getUser(userID);
+                if (data) {
+                    // Sync PostgreSQL data to JSON for backup
+                    const syncData = {
+                        userID: userID,
+                        money: data.money || 0,
+                        exp: data.exp || 0,
+                        createTime: data.createTime || { timestamp: Date.now() },
+                        data: data.data || { timestamp: Date.now() },
+                        lastUpdate: Date.now()
+                    };
+                    
+                    Currencies[userID] = syncData;
+                    await saveData(Currencies);
+                    return syncData;
+                }
+                
+                // Create in PostgreSQL if doesn't exist
+                await PostgreSQL.createUser(userID, { money: 0, exp: 0, data: {} });
+                data = await PostgreSQL.getUser(userID);
+                if (data) {
+                    const syncData = {
+                        userID: userID,
+                        money: data.money || 0,
+                        exp: data.exp || 0,
+                        createTime: { timestamp: Date.now() },
+                        data: { timestamp: Date.now() },
+                        lastUpdate: Date.now()
+                    };
+                    
+                    Currencies[userID] = syncData;
+                    await saveData(Currencies);
+                    return syncData;
+                }
+            }
+
             // Reload data from file to ensure we have latest data
             try {
                 const fileData = readFileSync(path, 'utf8');
                 Currencies = JSON.parse(fileData);
             } catch (reloadError) {
                 console.log(`[CURRENCIES] Failed to reload data: ${reloadError.message}`);
-            }
-
-            // Try PostgreSQL first
-            if (PostgreSQL) {
-                let data = await PostgreSQL.getUser(userID);
-                if (!data) {
-                    await PostgreSQL.createUser(userID, { money: 0, exp: 0, data: {} });
-                    data = await PostgreSQL.getUser(userID);
-                }
-                if (data) return data;
             }
 
             // Fallback to JSON
@@ -104,7 +132,21 @@ module.exports = function ({ models, Users, PostgreSQL }) {
             if (PostgreSQL) {
                 await PostgreSQL.updateUser(userID, options);
                 const updatedData = await PostgreSQL.getUser(userID);
-                if (updatedData) return updatedData;
+                if (updatedData) {
+                    // Sync to JSON as well
+                    const syncData = {
+                        userID: userID,
+                        money: updatedData.money || 0,
+                        exp: updatedData.exp || 0,
+                        createTime: updatedData.createTime || { timestamp: Date.now() },
+                        data: updatedData.data || { timestamp: Date.now() },
+                        lastUpdate: Date.now()
+                    };
+                    
+                    Currencies[userID] = syncData;
+                    await saveData(Currencies);
+                    return syncData;
+                }
             }
 
             // Ensure user exists
@@ -114,6 +156,16 @@ module.exports = function ({ models, Users, PostgreSQL }) {
 
             Currencies[userID] = {...Currencies[userID], ...options, lastUpdate: Date.now()};
             await saveData(Currencies);
+            
+            // Also sync to PostgreSQL if available
+            if (PostgreSQL && !PostgreSQL.updateUser) {
+                try {
+                    await PostgreSQL.updateUser(userID, Currencies[userID]);
+                } catch (pgError) {
+                    console.log(`[CURRENCIES] PostgreSQL sync error: ${pgError.message}`);
+                }
+            }
+            
             return Currencies[userID];
         } catch (error) {
             console.log(`[CURRENCIES] Set data error for ${userID}: ${error.message}`);

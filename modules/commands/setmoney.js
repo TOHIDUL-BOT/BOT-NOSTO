@@ -48,15 +48,15 @@ module.exports.run = async function ({ api, event, args, Currencies, getText }) 
 		const targetID = Object.keys(mentions)[0];
 		const targetName = mentions[targetID].replace(/\@/g, "");
 
-		// Set the money amount
+		// Set the money amount in currencies database
 		await Currencies.setData(targetID, { money: amount });
 
-		// Also update PostgreSQL database if enabled
-		if (global.database && global.database.updateUser) {
+		// Also update Users database if enabled
+		if (global.PostgreSQL) {
 			try {
-				await global.database.updateUser(targetID, { money: amount });
+				await global.PostgreSQL.updateUser(targetID, { money: amount });
 			} catch (dbError) {
-				console.log('Database update error in setmoney:', dbError);
+				console.log('PostgreSQL update error in setmoney:', dbError);
 			}
 		}
 
@@ -72,12 +72,12 @@ module.exports.run = async function ({ api, event, args, Currencies, getText }) 
 		// Setting money for themselves
 		await Currencies.setData(senderID, { money: amount });
 
-		// Also update PostgreSQL database if enabled
-		if (global.database && global.database.updateUser) {
+		// Also update Users database if enabled
+		if (global.PostgreSQL) {
 			try {
-				await global.database.updateUser(senderID, { money: amount });
+				await global.PostgreSQL.updateUser(senderID, { money: amount });
 			} catch (dbError) {
-				console.log('Database update error in setmoney:', dbError);
+				console.log('PostgreSQL update error in setmoney:', dbError);
 			}
 		}
 
