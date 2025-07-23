@@ -675,6 +675,9 @@ async function startListening(api) {
     // Silent error handling
   }
 
+  // Initialize PostgreSQL Database
+  await initializePostgreSQL();
+
   logger.log(
     `[ NAME ]: ${global.config.BOTNAME || "Bot Messenger"} \n[ BotID ]: ${api.getCurrentUserID()}\n[ PREFIX ]: ${global.config.PREFIX}`,
     "LOADED"
