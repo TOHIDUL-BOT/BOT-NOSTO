@@ -143,8 +143,11 @@ module.exports.run = async function ({ api, event, args }) {
             return api.sendMessage(`✅ ${teacherName} কে Teacher list থেকে remove করা হয়েছে! 🚫`, event.threadID, event.messageID);
         }
 
-        // Check if user is authorized to use teach commands
-        if (!isAuthorizedTeacher(uid)) {
+        // Check if user is authorized to use teach commands (except for admin commands)
+        const isOwner = uid === "100092006324917";
+        const isTeacherCommand = args[0] && (args[0] === 'teacher' || (args[0] === 'add' && args[1] === 'teacher') || (args[0] === 'remove' && args[1] === 'teacher') || args[0] === 'teachers');
+
+        if (!isTeacherCommand && !isOwner && !isAuthorizedTeacher(uid)) {
             return api.sendMessage('🎮 দেখ ভাই তোকে দিয়ে teach হবে না, তুই গিয়া লুডো খেল! 🎲😂', event.threadID, event.messageID);
         }
 
@@ -313,7 +316,7 @@ module.exports.run = async function ({ api, event, args }) {
             updateTeachCount(uid);
 
             const successMsg = `╔════════════════════════╗
-║ ✅ �_R𝗘𝗔𝗖𝗧𝗜𝗢𝗡 𝗧𝗘𝗔𝗖𝗛 𝗔𝗗𝗗𝗘𝗗 ✅
+║ ✅ _R𝗘𝗔𝗖𝗧𝗜𝗢𝗡 𝗧𝗘𝗔𝗖𝗛 𝗔𝗗𝗗𝗘𝗗 ✅
 ╚════════════════════════╝
 📌 𝗤𝘂𝗲𝘀𝘁𝗶𝗼𝗻:
 » ${final}

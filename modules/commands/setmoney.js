@@ -1,4 +1,3 @@
-
 module.exports.config = {
 	name: "setmoney",
 	version: "1.0.0",
@@ -47,24 +46,43 @@ module.exports.run = async function ({ api, event, args, Currencies, getText }) 
 	if (Object.keys(mentions).length === 1) {
 		// Setting money for mentioned user
 		const targetID = Object.keys(mentions)[0];
-		
+		const targetName = mentions[targetID].replace(/\@/g, "");
+
 		// Set the money amount
 		await Currencies.setData(targetID, { money: amount });
-		
+
+		// Also update PostgreSQL database if enabled
+		if (global.database && global.database.updateUser) {
+			try {
+				await global.database.updateUser(targetID, { money: amount });
+			} catch (dbError) {
+				console.log('Database update error in setmoney:', dbError);
+			}
+		}
+
 		return api.sendMessage({
-			body: getText("ne fokir tore tk dilam", mentions[targetID].replace(/\@/g, ""), amount),
+			body: `✅ Successfully set ${targetName}'s money to ${amount}$`,
 			mentions: [{
-				tag: mentions[targetID].replace(/\@/g, ""),
+				tag: targetName,
 				id: targetID
 			}]
 		}, threadID, messageID);
-		
+
 	} else if (Object.keys(mentions).length === 0) {
 		// Setting money for themselves
 		await Currencies.setData(senderID, { money: amount });
-		
-		return api.sendMessage(getText("setSelfSuccess boss ", amount), threadID, messageID);
-		
+
+		// Also update PostgreSQL database if enabled
+		if (global.database && global.database.updateUser) {
+			try {
+				await global.database.updateUser(senderID, { money: amount });
+			} catch (dbError) {
+				console.log('Database update error in setmoney:', dbError);
+			}
+		}
+
+		return api.sendMessage(`✅ Successfully set your money to ${amount}$`, threadID, messageID);
+
 	} else {
 		// Invalid usage
 		return api.sendMessage(getText("setUsage"), threadID, messageID);
