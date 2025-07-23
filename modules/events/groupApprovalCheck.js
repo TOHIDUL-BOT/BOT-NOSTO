@@ -44,9 +44,9 @@ module.exports.run = async function({ api, event }) {
     let isApproved = false;
     let isPending = false;
     
-    if (global.database && global.database.isGroupApproved) {
+    if (global.PostgreSQL && global.PostgreSQL.isGroupApproved) {
       try {
-        isApproved = await global.database.isGroupApproved(threadID);
+        isApproved = await global.PostgreSQL.isGroupApproved(threadID);
       } catch (dbError) {
         console.error('Database approval check error:', dbError);
       }

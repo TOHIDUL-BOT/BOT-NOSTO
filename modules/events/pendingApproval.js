@@ -70,9 +70,9 @@ module.exports.run = async function({ api, event, Users, Threads }) {
         config.APPROVAL.pendingGroups.push(threadID);
 
         // Save to database first
-        if (global.database && global.database.addToPendingApproval) {
+        if (global.PostgreSQL && global.PostgreSQL.addToPendingApproval) {
           try {
-            await global.database.addToPendingApproval(threadID, groupName, threadInfo.participantIDs?.length || 0);
+            await global.PostgreSQL.addToPendingApproval(threadID, groupName, threadInfo.participantIDs?.length || 0);
             console.log(`✅ Group ${threadID} added to pending approval in database`);
           } catch (dbError) {
             console.error('Database pending approval error:', dbError);

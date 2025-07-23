@@ -179,7 +179,7 @@ module.exports.run = async function ({ api, event, args }) {
         }
         
         // Save to PostgreSQL database first
-        if (global.database && global.database.approveGroup) {
+        if (global.PostgreSQL && global.PostgreSQL.approveGroup) {
           try {
             let threadName = "Unknown Group";
             let memberCount = 0;
@@ -193,11 +193,11 @@ module.exports.run = async function ({ api, event, args }) {
               console.log('Could not get thread info:', infoError.message);
             }
 
-            const dbResult = await global.database.approveGroup(targetID, threadName, senderID, memberCount);
+            const dbResult = await global.PostgreSQL.approveGroup(targetID, threadName, senderID, memberCount);
             if (dbResult) {
               console.log(`✅ Group ${targetID} approved in database`);
               // Sync database to config.json
-              await global.database.syncApprovalToConfig();
+              await global.PostgreSQL.syncApprovalToConfig();
             }
           } catch (dbError) {
             console.error('Database approval error:', dbError);

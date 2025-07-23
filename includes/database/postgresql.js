@@ -315,11 +315,16 @@ module.exports = function () {
     // Approval functions
     async function approveGroup(threadID, threadName, approvedBy, memberCount = 0) {
         try {
-            // Update threads table
-            await pool.query(
-                'UPDATE threads SET approved = true, updated_at = NOW() WHERE thread_id = $1',
-                [threadID]
-            );
+            // First ensure thread exists in threads table
+            await pool.query(`
+                INSERT INTO threads (thread_id, thread_name, approved, member_count, data)
+                VALUES ($1, $2, true, $3, '{}')
+                ON CONFLICT (thread_id) DO UPDATE SET
+                    approved = true,
+                    thread_name = COALESCE(EXCLUDED.thread_name, threads.thread_name),
+                    member_count = COALESCE(EXCLUDED.member_count, threads.member_count),
+                    updated_at = NOW()
+            `, [threadID, threadName, memberCount]);
             
             // Add to approved_groups table
             await pool.query(`
