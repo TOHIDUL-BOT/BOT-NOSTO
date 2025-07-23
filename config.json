@@ -26,27 +26,9 @@
     "100092006324917"
   ],
   "AUTO_APPROVE": {
-    "enabled": true,
-    "approvedGroups": [
-      "29408682758779457",
-      "27539078075740498",
-      "10069480116474539",
-      "9586003691522317",
-      "7841296669307339",
-      "10069609953122386",
-      "9825833710859918",
-      "9333535413375624",
-      "24574315055485549",
-      "25591694937140767"
-    ],
-    "autoApproveMessage": false
-  },
-  "APPROVAL": {
-    "approvedGroups": [
-      "25591694937140767"
-    ],
-    "pendingGroups": [],
-    "rejectedGroups": []
+    "enabled": false,
+    "autoApproveMessage": false,
+    "note": "Approval system moved to PostgreSQL database"
   },
   "DESIGN": {
     "Title": "TOHI-BOT-HUB",

@@ -8,6 +8,17 @@ module.exports = function ({ api }) {
         writeFileSync(path, "{}", { flag: 'a+' });
     }
 
+    // PostgreSQL integration
+    const config = require('../../config.json');
+    let PostgreSQL = null;
+    if (config.DATABASE?.enabled) {
+        try {
+            PostgreSQL = require('./postgresql')();
+        } catch (error) {
+            console.log('PostgreSQL connection failed:', error.message);
+        }
+    }
+
     async function saveData(data) {
         try {
             if (!data) throw new Error('Data cannot be left blank');
@@ -137,6 +148,21 @@ module.exports = function ({ api }) {
         try {
             if (!userID) throw new Error("User ID cannot be blank");
             if (isNaN(userID)) throw new Error("Invalid user ID");
+            
+            // Try PostgreSQL first
+            if (PostgreSQL) {
+                let data = await PostgreSQL.getUser(userID);
+                if (!data) {
+                    await createData(userID);
+                    data = await PostgreSQL.getUser(userID);
+                }
+                if (data) {
+                    if (callback && typeof callback == "function") callback(null, data);
+                    return data;
+                }
+            }
+            
+            // Fallback to JSON
             if (!usersData.hasOwnProperty(userID)) await createData(userID, (error, info) => {
                 return info;
             });
@@ -154,16 +180,26 @@ module.exports = function ({ api }) {
             if (!userID) throw new Error("User ID cannot be blank");
             if (isNaN(userID)) throw new Error("Invalid user ID");
             if (!userID) throw new Error("userID cannot be empty");
+            if (typeof options != 'object') throw new Error("The options parameter passed must be an object");
+            
+            // Update in PostgreSQL first
+            if (PostgreSQL) {
+                await PostgreSQL.updateUser(userID, options);
+                const updatedData = await PostgreSQL.getUser(userID);
+                if (updatedData) {
+                    if (callback && typeof callback == "function") callback(null, updatedData);
+                    return updatedData;
+                }
+            }
+            
+            // Fallback to JSON
             if (global.config.autoCreateDB) {
                 if (!usersData.hasOwnProperty(userID)) throw new Error(`User ID: ${userID} does not exist in Database`);
             }
-            if (typeof options != 'object') throw new Error("The options parameter passed must be an object");
             
-            // Prevent nested data structure - only merge top level properties
             const currentData = usersData[userID] || {};
             const cleanOptions = { ...options };
             
-            // Remove any nested data property to prevent duplication
             if (cleanOptions.data && typeof cleanOptions.data === 'object' && cleanOptions.data.data) {
                 delete cleanOptions.data.data;
             }
@@ -198,17 +234,39 @@ module.exports = function ({ api }) {
     async function createData(userID, callback) {
         try {
             if (!userID) throw new Error("User ID cannot be blank");
-            userID = String(userID); // Ensure userID is string
+            userID = String(userID);
             
-            // If user already exists, check for corrupted nested data and clean it
+            // Create in PostgreSQL first
+            if (PostgreSQL) {
+                const existingData = await PostgreSQL.getUser(userID);
+                if (existingData) {
+                    if (callback && typeof callback == "function") callback(null, existingData);
+                    return existingData;
+                }
+                
+                const userData = {
+                    userID: userID,
+                    money: 0,
+                    exp: 0,
+                    data: { timestamp: Date.now() },
+                    busy: false,
+                    name: undefined
+                };
+                
+                await PostgreSQL.createUser(userID, userData);
+                const newData = await PostgreSQL.getUser(userID);
+                
+                if (callback && typeof callback == "function") callback(null, newData);
+                return newData;
+            }
+            
+            // Fallback to JSON
             if (usersData.hasOwnProperty(userID)) {
                 const existingData = usersData[userID];
                 
-                // Check if data is corrupted with nested structure
                 if (existingData.data && existingData.data.data) {
                     console.log(`⚠️  Cleaning corrupted nested data for user ${userID}`);
                     
-                    // Keep only the top-level data, remove nested structures
                     const cleanData = {
                         userID: userID,
                         money: existingData.money || 0,
@@ -228,24 +286,18 @@ module.exports = function ({ api }) {
                 return usersData[userID];
             }
             
-            // Create clean user data structure
             const userData = {
                 userID: userID,
                 money: 0,
                 exp: 0,
-                createTime: {
-                    timestamp: Date.now()
-                },
-                data: {
-                    timestamp: Date.now()
-                },
+                createTime: { timestamp: Date.now() },
+                data: { timestamp: Date.now() },
                 lastUpdate: Date.now()
             };
             
             usersData[userID] = userData;
             await saveData(usersData);
             
-            // Add to global data tracking
             if (global.data && global.data.allUserID && !global.data.allUserID.includes(userID)) {
                 global.data.allUserID.push(userID);
             }
@@ -257,7 +309,6 @@ module.exports = function ({ api }) {
         } catch (error) {
             console.log(`Database creation error for ${userID}: ${error.message}`);
             
-            // Force create minimal clean data to prevent errors
             if (!usersData.hasOwnProperty(userID)) {
                 usersData[userID] = {
                     userID: userID,

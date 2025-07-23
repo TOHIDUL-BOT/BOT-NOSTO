@@ -10,6 +10,17 @@ module.exports = function ({ api }) {
         writeFileSync(path, "{}", { flag: 'a+' });
     }
 
+    // PostgreSQL integration
+    const config = require('../../config.json');
+    let PostgreSQL = null;
+    if (config.DATABASE?.enabled) {
+        try {
+            PostgreSQL = require('./postgresql')();
+        } catch (error) {
+            console.log('PostgreSQL connection failed:', error.message);
+        }
+    }
+
     async function getInfo(threadID) {
         try {
             const result = await api.getThreadInfo(threadID);
