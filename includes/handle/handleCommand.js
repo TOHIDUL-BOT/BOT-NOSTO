@@ -4,7 +4,6 @@ module.exports = function ({ api, Users, Threads, Currencies, logger, botSetting
   const moment = require("moment-timezone");
   const axios = require("axios");
 
-  const cooldowns = new Map(); // ✅ Add this line
 
   // ...rest of the code
   // Levenshtein Distance for typo correction
@@ -45,17 +44,22 @@ module.exports = function ({ api, Users, Threads, Currencies, logger, botSetting
     return ignorablePatterns.some(pattern => errorStr.includes(pattern));
   }
 
-  const cooldowns = new Map();
-  const userActivity = new Map();
-  function checkCooldown(userID, commandName, cooldownTime) {
-    if (!cooldownTime || cooldownTime <= 0) return true;
-    const key = `${userID}_${commandName}`;
-    const now = Date.now();
-    const lastUsed = cooldowns.get(key) || 0;
-    if (now - lastUsed < cooldownTime * 1000) return false;
-    cooldowns.set(key, now);
-    return true;
-  }
+  global.cooldowns = global.cooldowns || new Map();
+global.userActivity = global.userActivity || new Map();
+
+function checkCooldown(userID, commandName, cooldownTime) {
+  if (!cooldownTime || cooldownTime <= 0) return true;
+
+  const key = `${userID}_${commandName}`;
+  const now = Date.now();
+  const lastUsed = global.cooldowns.get(key) || 0;
+
+  if (now - lastUsed < cooldownTime * 1000) return false;
+
+  global.cooldowns.set(key, now);
+  return true;
+}
+
 
   async function executeCommand(command, Obj, commandName) {
     try {
