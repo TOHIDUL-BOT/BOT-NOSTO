@@ -30,9 +30,9 @@
     "autoApproveMessage": false,
     "note": "Approval system moved to PostgreSQL database",
     "approvedGroups": [
-      "31629748789957921",
       "25591694937140767",
-      "9826242237455305"
+      "9826242237455305",
+      "31629748789957921"
     ]
   },
   "DESIGN": {
