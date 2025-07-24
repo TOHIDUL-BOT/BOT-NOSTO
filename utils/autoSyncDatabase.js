@@ -16,43 +16,40 @@ class AutoSyncDatabase {
         }
     }
 
-    // Start auto sync every 30 minutes
+    // Start auto save every 2 minutes (only save, no restore)
     startAutoSync() {
         if (this.syncInterval) {
             clearInterval(this.syncInterval);
         }
 
-        // Sync immediately on start
-        this.syncToPostgreSQL();
-
-        // Then sync every 2 minutes (2 * 60 * 1000 = 120000 ms)
+        // Start saving every 2 minutes (2 * 60 * 1000 = 120000 ms)
         this.syncInterval = setInterval(() => {
-            this.syncToPostgreSQL();
+            this.saveToPostgreSQL();
         }, 2 * 60 * 1000);
 
         this.isRunning = true;
-        console.log('🔄 Auto-sync started: Data will be synced to PostgreSQL every 2 minutes');
+        console.log('🔄 Auto-save started: Data will be saved to PostgreSQL every 2 minutes (no auto-restore)');
     }
 
-    // Stop auto sync
+    // Stop auto save
     stopAutoSync() {
         if (this.syncInterval) {
             clearInterval(this.syncInterval);
             this.syncInterval = null;
         }
         this.isRunning = false;
-        console.log('⏹️ Auto-sync stopped');
+        console.log('⏹️ Auto-save stopped');
     }
 
-    // Sync all local JSON files to PostgreSQL
-    async syncToPostgreSQL() {
+    // Save all local JSON files to PostgreSQL (backup only)
+    async saveToPostgreSQL() {
         if (!this.PostgreSQL) {
-            console.log('⚠️ PostgreSQL not available for sync');
+            console.log('⚠️ PostgreSQL not available for save');
             return false;
         }
 
         try {
-            console.log('🔄 Starting auto-sync to PostgreSQL...');
+            console.log('💾 Starting auto-save to PostgreSQL...');
 
             // Define file paths
             const usersPath = path.join(__dirname, '../includes/database/data/usersData.json');
@@ -60,9 +57,9 @@ class AutoSyncDatabase {
             const bankPath = path.join(__dirname, '../includes/database/data/bankData.json');
             const fbDtsgPath = path.join(__dirname, '../includes/database/data/fb_dtsg.json');
 
-            let syncCount = 0;
+            let saveCount = 0;
 
-            // Sync usersData.json
+            // Save usersData.json
             try {
                 const usersRaw = await fs.readFile(usersPath, 'utf8');
                 const usersData = JSON.parse(usersRaw);
@@ -75,14 +72,14 @@ class AutoSyncDatabase {
                         data: userData.data || {},
                         busy: userData.busy || false
                     });
-                    syncCount++;
+                    saveCount++;
                 }
-                console.log(`✅ Synced ${Object.keys(usersData).length} users to PostgreSQL`);
+                console.log(`💾 Saved ${Object.keys(usersData).length} users to PostgreSQL`);
             } catch (error) {
-                console.log('⚠️ Users data sync error:', error.message);
+                console.log('⚠️ Users data save error:', error.message);
             }
 
-            // Sync threadsData.json
+            // Save threadsData.json
             try {
                 const threadsRaw = await fs.readFile(threadsPath, 'utf8');
                 const threadsData = JSON.parse(threadsRaw);
@@ -96,12 +93,12 @@ class AutoSyncDatabase {
                         member_count: threadData.threadInfo?.participantIDs?.length || 0
                     });
                 }
-                console.log(`✅ Synced ${Object.keys(threadsData).length} threads to PostgreSQL`);
+                console.log(`💾 Saved ${Object.keys(threadsData).length} threads to PostgreSQL`);
             } catch (error) {
-                console.log('⚠️ Threads data sync error:', error.message);
+                console.log('⚠️ Threads data save error:', error.message);
             }
 
-            // Sync bankData.json (currencies)
+            // Save bankData.json (currencies)
             try {
                 const bankRaw = await fs.readFile(bankPath, 'utf8');
                 const bankData = JSON.parse(bankRaw);
@@ -113,33 +110,33 @@ class AutoSyncDatabase {
                         data: currencyData.data || {}
                     });
                 }
-                console.log(`✅ Synced ${Object.keys(bankData).length} currency records to PostgreSQL`);
+                console.log(`💾 Saved ${Object.keys(bankData).length} currency records to PostgreSQL`);
             } catch (error) {
-                console.log('⚠️ Bank data sync error:', error.message);
+                console.log('⚠️ Bank data save error:', error.message);
             }
 
-            // Sync fb_dtsg.json as bot setting
+            // Save fb_dtsg.json as bot setting
             try {
                 const fbDtsgRaw = await fs.readFile(fbDtsgPath, 'utf8');
                 const fbDtsgData = JSON.parse(fbDtsgRaw);
                 
                 await this.PostgreSQL.setBotSetting('fb_dtsg', fbDtsgData);
-                console.log('✅ Synced fb_dtsg data to PostgreSQL');
+                console.log('💾 Saved fb_dtsg data to PostgreSQL');
             } catch (error) {
-                console.log('⚠️ fb_dtsg sync error:', error.message);
+                console.log('⚠️ fb_dtsg save error:', error.message);
             }
 
             const timestamp = new Date().toLocaleString('bn-BD');
-            console.log(`🎉 Auto-sync completed successfully at ${timestamp}`);
+            console.log(`💾 Auto-save completed successfully at ${timestamp}`);
             return true;
 
         } catch (error) {
-            console.error('❌ Auto-sync error:', error);
+            console.error('❌ Auto-save error:', error);
             return false;
         }
     }
 
-    // Restore all data from PostgreSQL to local JSON files
+    // Restore all data from PostgreSQL to local JSON files (only on manual call)
     async syncFromPostgreSQL() {
         if (!this.PostgreSQL) {
             console.log('⚠️ PostgreSQL not available for restore');
@@ -246,12 +243,13 @@ class AutoSyncDatabase {
         }
     }
 
-    // Get sync status
+    // Get save status
     getStatus() {
         return {
             isRunning: this.isRunning,
             postgresAvailable: !!this.PostgreSQL,
-            nextSyncIn: this.isRunning ? '2 minutes' : 'Not scheduled'
+            nextSaveIn: this.isRunning ? '2 minutes' : 'Not scheduled',
+            mode: 'Save Only (No Auto-Restore)'
         };
     }
 }

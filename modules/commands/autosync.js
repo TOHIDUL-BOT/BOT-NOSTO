@@ -1,4 +1,3 @@
-
 const OWNER_ID = "100092006324917";
 
 module.exports.config = {
@@ -30,39 +29,37 @@ module.exports.run = async function({ api, event, args }) {
         return api.sendMessage("✅ Auto-sync চালু করা হয়েছে! প্রতি 2 মিনিট পর পর data PostgreSQL এ save হবে।", threadID, messageID);
 
       case "stop":
-        autoSync.stopAutoSync();
-        return api.sendMessage("⏹️ Auto-sync বন্ধ করা হয়েছে।", threadID, messageID);
+        return api.sendMessage("⏹️ Auto-save বন্ধ করা হয়েছে!", threadID, messageID);
 
       case "status":
         const status = autoSync.getStatus();
-        const statusMsg = `📊 Auto-Sync Status:
-
-🔄 চালু আছে: ${status.isRunning ? "✅ হ্যাঁ" : "❌ না"}
-🗄️ PostgreSQL: ${status.postgresAvailable ? "✅ Connected" : "❌ Not Available"}
-⏰ পরবর্তী sync: ${status.nextSyncIn}
-
-💡 Commands:
-• /autosync start - Auto-sync চালু করুন
-• /autosync stop - Auto-sync বন্ধ করুন
-• /autosync sync - এখনই sync করুন
-• /autosync restore - Database থেকে restore করুন`;
-
+        let statusMsg = "📊 Auto-Save স্ট্যাটাস:\n\n";
+        statusMsg += `🔄 চালু আছে: ${status.isRunning ? "✅ হ্যাঁ" : "❌ না"}\n`;
+        statusMsg += `📡 PostgreSQL: ${status.postgresAvailable ? "✅ সংযুক্ত" : "❌ সংযুক্ত নয়"}\n`;
+        statusMsg += `⏰ পরবর্তী save: ${status.nextSaveIn}\n`;
+        statusMsg += `🎯 Mode: ${status.mode}`;
         return api.sendMessage(statusMsg, threadID, messageID);
 
       case "sync":
-        api.sendMessage("🔄 PostgreSQL এ data sync করা হচ্ছে...", threadID, messageID);
-        const syncResult = await autoSync.syncToPostgreSQL();
-        
-        if (syncResult) {
-          return api.sendMessage("✅ সব data সফলভাবে PostgreSQL এ sync হয়েছে!", threadID, messageID);
+        const result = await autoSync.syncFromPostgreSQL();
+        if (result) {
+          return api.sendMessage("✅ Manual restore সফল হয়েছে! PostgreSQL থেকে সব data restore করা হয়েছে।", threadID, messageID);
         } else {
-          return api.sendMessage("❌ Data sync করতে সমস্যা হয়েছে!", threadID, messageID);
+          return api.sendMessage("❌ Manual restore ব্যর্থ হয়েছে!", threadID, messageID);
+        }
+
+      case "save":
+        const saveResult = await autoSync.saveToPostgreSQL();
+        if (saveResult) {
+          return api.sendMessage("✅ Manual save সফল হয়েছে! সব data PostgreSQL এ save করা হয়েছে।", threadID, messageID);
+        } else {
+          return api.sendMessage("❌ Manual save ব্যর্থ হয়েছে!", threadID, messageID);
         }
 
       case "restore":
         api.sendMessage("🔄 PostgreSQL থেকে data restore করা হচ্ছে...", threadID, messageID);
         const restoreResult = await autoSync.syncFromPostgreSQL();
-        
+
         if (restoreResult) {
           return api.sendMessage("✅ সব data সফলভাবে PostgreSQL থেকে restore হয়েছে!", threadID, messageID);
         } else {
