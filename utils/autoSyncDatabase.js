@@ -126,6 +126,69 @@ class AutoSyncDatabase {
         }
     }
 
+    // Restore data from PostgreSQL to local files (for startup sync)
+    async syncFromPostgreSQL() {
+        if (!this.PostgreSQL) {
+            console.log('⚠️ PostgreSQL not available for sync');
+            return false;
+        }
+
+        try {
+            console.log('🔄 Restoring data from PostgreSQL...');
+
+            // Get all data from PostgreSQL
+            const [users, threads, approvedGroups] = await Promise.all([
+                this.PostgreSQL.getAllUsers(),
+                this.PostgreSQL.getAllThreads(),
+                this.PostgreSQL.getApprovedGroups()
+            ]);
+
+            // Populate global data from PostgreSQL
+            users.forEach(user => {
+                if (!global.data.allUserID.includes(user.user_id)) {
+                    global.data.allUserID.push(user.user_id);
+                }
+                if (user.name) {
+                    global.data.userName.set(user.user_id, user.name);
+                }
+                if (user.banned) {
+                    global.data.userBanned.set(user.user_id, {
+                        reason: user.ban_reason || "",
+                        dateAdded: user.created_at || ""
+                    });
+                }
+            });
+
+            threads.forEach(thread => {
+                if (!global.data.allThreadID.includes(thread.thread_id)) {
+                    global.data.allThreadID.push(thread.thread_id);
+                }
+                global.data.threadData.set(thread.thread_id, thread.data || {});
+                global.data.threadInfo.set(thread.thread_id, thread.thread_info || {});
+
+                if (thread.banned) {
+                    global.data.threadBanned.set(thread.thread_id, {
+                        reason: thread.ban_reason || "",
+                        dateAdded: thread.created_at || ""
+                    });
+                }
+                if (thread.nsfw) {
+                    global.data.threadAllowNSFW.push(thread.thread_id);
+                }
+                if (thread.command_banned && thread.command_banned.length > 0) {
+                    global.data.commandBanned.set(thread.thread_id, thread.command_banned);
+                }
+            });
+
+            console.log(`✅ Data restored from PostgreSQL: ${users.length} users, ${threads.length} threads, ${approvedGroups.length} approved groups`);
+            return true;
+
+        } catch (error) {
+            console.error('❌ Sync from PostgreSQL error:', error);
+            return false;
+        }
+    }
+
     // Get save status
     getStatus() {
         return {

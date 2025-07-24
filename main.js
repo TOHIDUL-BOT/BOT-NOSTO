@@ -827,9 +827,6 @@ async function initializePostgreSQL() {
         if (global.config.DATABASE?.enabled) {
             console.log('🔄 Restoring data from PostgreSQL on startup...');
             await autoSync.syncFromPostgreSQL();
-
-            // Start auto-sync for periodic backup
-            autoSync.startAutoSync();
         }
 
         // Launch application - initialize bot instead of calling utils/index.js
