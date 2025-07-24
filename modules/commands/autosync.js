@@ -27,7 +27,7 @@ module.exports.run = async function({ api, event, args }) {
     switch (command) {
       case "start":
         autoSync.startAutoSync();
-        return api.sendMessage("✅ Auto-sync চালু করা হয়েছে! প্রতি 30 মিনিট পর পর data PostgreSQL এ save হবে।", threadID, messageID);
+        return api.sendMessage("✅ Auto-sync চালু করা হয়েছে! প্রতি 2 মিনিট পর পর data PostgreSQL এ save হবে।", threadID, messageID);
 
       case "stop":
         autoSync.stopAutoSync();

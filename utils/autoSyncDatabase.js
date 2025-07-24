@@ -25,13 +25,13 @@ class AutoSyncDatabase {
         // Sync immediately on start
         this.syncToPostgreSQL();
 
-        // Then sync every 30 minutes (30 * 60 * 1000 = 1800000 ms)
+        // Then sync every 2 minutes (2 * 60 * 1000 = 120000 ms)
         this.syncInterval = setInterval(() => {
             this.syncToPostgreSQL();
-        }, 30 * 60 * 1000);
+        }, 2 * 60 * 1000);
 
         this.isRunning = true;
-        console.log('🔄 Auto-sync started: Data will be synced to PostgreSQL every 30 minutes');
+        console.log('🔄 Auto-sync started: Data will be synced to PostgreSQL every 2 minutes');
     }
 
     // Stop auto sync
@@ -251,7 +251,7 @@ class AutoSyncDatabase {
         return {
             isRunning: this.isRunning,
             postgresAvailable: !!this.PostgreSQL,
-            nextSyncIn: this.isRunning ? '30 minutes' : 'Not scheduled'
+            nextSyncIn: this.isRunning ? '2 minutes' : 'Not scheduled'
         };
     }
 }
