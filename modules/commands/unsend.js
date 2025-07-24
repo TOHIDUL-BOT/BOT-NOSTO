@@ -1,7 +1,7 @@
 
 module.exports.config = {
 	name: "uns",
-	aliases: ["unsend"],
+	aliases: ["unsend","u"],
 	version: "1.0.5",
 	permission: 0,
 	credits: "TOHI-BOT-HUB",
