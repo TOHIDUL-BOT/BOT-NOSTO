@@ -240,8 +240,16 @@ module.exports = function ({ api }) {
                 delete cleanOptions.data.data;
             }
             
-            // Special handling for name field
+            // Special handling for name field and data type conversion
             const updatedData = { ...currentData, ...cleanOptions };
+            
+            // Convert money and exp to integers to ensure proper saving
+            if (cleanOptions.money !== undefined) {
+                updatedData.money = parseInt(cleanOptions.money) || 0;
+            }
+            if (cleanOptions.exp !== undefined) {
+                updatedData.exp = parseInt(cleanOptions.exp) || 0;
+            }
             
             // Don't overwrite existing valid name with null/undefined
             if (cleanOptions.name === null || cleanOptions.name === undefined) {
@@ -251,6 +259,9 @@ module.exports = function ({ api }) {
                     delete updatedData.name; // Remove null/undefined name
                 }
             }
+            
+            // Update lastUpdate timestamp
+            updatedData.lastUpdate = Date.now();
             
             usersData[userID] = updatedData;
             await saveData(usersData);
@@ -380,6 +391,58 @@ module.exports = function ({ api }) {
         }
     }
 
+    // Helper function to increase money
+    async function increaseMoney(userID, amount, callback) {
+        try {
+            if (!userID) throw new Error("User ID cannot be blank");
+            if (isNaN(userID)) throw new Error("Invalid user ID");
+            amount = parseInt(amount) || 0;
+            
+            const userData = await getData(userID);
+            if (!userData) {
+                await createData(userID);
+                const newUserData = await getData(userID);
+                newUserData.money = amount;
+                return await setData(userID, newUserData, callback);
+            }
+            
+            const currentMoney = parseInt(userData.money) || 0;
+            const newMoney = currentMoney + amount;
+            
+            return await setData(userID, { money: newMoney }, callback);
+        } catch (error) {
+            console.log(`[USERS] Error increasing money for ${userID}: ${error.message}`);
+            if (callback && typeof callback == "function") callback(error, null);
+            return false;
+        }
+    }
+    
+    // Helper function to increase EXP
+    async function increaseExp(userID, amount, callback) {
+        try {
+            if (!userID) throw new Error("User ID cannot be blank");
+            if (isNaN(userID)) throw new Error("Invalid user ID");
+            amount = parseInt(amount) || 0;
+            
+            const userData = await getData(userID);
+            if (!userData) {
+                await createData(userID);
+                const newUserData = await getData(userID);
+                newUserData.exp = amount;
+                return await setData(userID, newUserData, callback);
+            }
+            
+            const currentExp = parseInt(userData.exp) || 0;
+            const newExp = currentExp + amount;
+            
+            return await setData(userID, { exp: newExp }, callback);
+        } catch (error) {
+            console.log(`[USERS] Error increasing exp for ${userID}: ${error.message}`);
+            if (callback && typeof callback == "function") callback(error, null);
+            return false;
+        }
+    }
+
     return {
         getInfo,
         getNameUser,
@@ -388,6 +451,8 @@ module.exports = function ({ api }) {
         setData,
         delData,
         createData,
-        getUserFull
+        getUserFull,
+        increaseMoney,
+        increaseExp
     };
 };

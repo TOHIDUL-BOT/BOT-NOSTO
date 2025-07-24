@@ -65,11 +65,16 @@ module.exports.run = async function({ api, event, Users }) {
       }
     }
 
-    // Get user data (mock data for now)
+    // Get user data from database
     const userData = await Users.getData(mention) || {};
-    const level = userData.level || Math.floor(Math.random() * 50) + 1;
-    const exp = userData.exp || Math.floor(Math.random() * 10000);
+    const exp = parseInt(userData.exp) || 0;
+    const money = parseInt(userData.money) || 0;
+    
+    // Calculate level based on EXP (every 1000 exp = 1 level)
+    const level = Math.floor(exp / 1000) + 1;
+    const currentLevelExp = (level - 1) * 1000;
     const nextLevelExp = level * 1000;
+    const progressExp = exp - currentLevelExp;
 
     // Create 1x5 inch canvas (72 DPI = 72x360 pixels)
     const width = 360;
@@ -138,7 +143,7 @@ module.exports.run = async function({ api, event, Users }) {
 
     // Add EXP info
     image.print(fontLevel, 75, 45, {
-      text: `EXP: ${exp}/${nextLevelExp}`,
+      text: `EXP: ${progressExp}/1000`,
       alignmentX: jimp.HORIZONTAL_ALIGN_LEFT
     });
 
@@ -153,7 +158,7 @@ module.exports.run = async function({ api, event, Users }) {
     image.composite(progressBg, progressX, progressY);
 
     // Progress bar fill
-    const progress = exp / nextLevelExp;
+    const progress = progressExp / 1000; // Progress within current level
     const fillWidth = Math.floor(progressWidth * progress);
     if (fillWidth > 0) {
       const progressFill = await jimp.create(fillWidth, progressHeight, '#E74C3C');
@@ -169,7 +174,7 @@ module.exports.run = async function({ api, event, Users }) {
     await image.writeAsync(outputPath);
 
     return api.sendMessage({
-      body: `🏆 ${userName} এর Rank Card\n\n📊 Level: ${level}\n⚡ EXP: ${exp}/${nextLevelExp}\n🎯 Progress: ${Math.floor(progress * 100)}%`,
+      body: `🏆 ${userName} এর Rank Card\n\n📊 Level: ${level}\n⚡ EXP: ${exp} (${progressExp}/1000 to next level)\n💰 Money: ${money}\n🎯 Progress: ${Math.floor(progress * 100)}%`,
       attachment: fs.createReadStream(outputPath)
     }, threadID, () => {
       // Clean up file after sending
