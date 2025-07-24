@@ -1,18 +1,4 @@
 {
-  "61550822924165": {
-    "userID": "61550822924165",
-    "name": null,
-    "money": "0",
-    "exp": "0",
-    "createTime": {
-      "timestamp": 1753286188895
-    },
-    "data": {
-      "timestamp": 1753286188781
-    },
-    "lastUpdate": 1753286188895,
-    "busy": false
-  },
   "61551154433279": {
     "userID": "61551154433279",
     "name": null,
@@ -24,7 +10,7 @@
     "data": {
       "timestamp": 1753286189488
     },
-    "lastUpdate": 1753286189602,
+    "lastUpdate": 1753349904202,
     "busy": false
   },
   "61551359782009": {
@@ -38,7 +24,7 @@
     "data": {
       "timestamp": 1753286190194
     },
-    "lastUpdate": 1753286190308,
+    "lastUpdate": 1753349904436,
     "busy": false
   },
   "61554994322751": {
@@ -52,7 +38,7 @@
     "data": {
       "timestamp": 1753286190900
     },
-    "lastUpdate": 1753286191014,
+    "lastUpdate": 1753349904669,
     "busy": false
   },
   "61555961971104": {
@@ -66,7 +52,7 @@
     "data": {
       "timestamp": 1753286191606
     },
-    "lastUpdate": 1753286191719,
+    "lastUpdate": 1753349904903,
     "busy": false
   },
   "61556151014892": {
@@ -80,7 +66,7 @@
     "data": {
       "timestamp": 1753286192311
     },
-    "lastUpdate": 1753286192424,
+    "lastUpdate": 1753349905136,
     "busy": false
   },
   "61556242886723": {
@@ -94,7 +80,7 @@
     "data": {
       "timestamp": 1753286193016
     },
-    "lastUpdate": 1753286193129,
+    "lastUpdate": 1753349906017,
     "busy": false
   },
   "61557109228190": {
@@ -108,7 +94,7 @@
     "data": {
       "timestamp": 1753286193721
     },
-    "lastUpdate": 1753286193835,
+    "lastUpdate": 1753349906250,
     "busy": false
   },
   "61557184754603": {
@@ -122,7 +108,7 @@
     "data": {
       "timestamp": 1753286194427
     },
-    "lastUpdate": 1753286194540,
+    "lastUpdate": 1753349906484,
     "busy": false
   },
   "61557709498734": {
@@ -136,7 +122,7 @@
     "data": {
       "timestamp": 1753286195132
     },
-    "lastUpdate": 1753286195246,
+    "lastUpdate": 1753349906717,
     "busy": false
   },
   "61557727027896": {
@@ -150,7 +136,7 @@
     "data": {
       "timestamp": 1753286195837
     },
-    "lastUpdate": 1753286195951,
+    "lastUpdate": 1753349906950,
     "busy": false
   },
   "61557765517246": {
@@ -164,7 +150,7 @@
     "data": {
       "timestamp": 1753286196542
     },
-    "lastUpdate": 1753286196656,
+    "lastUpdate": 1753349907184,
     "busy": false
   },
   "61559791984167": {
@@ -178,21 +164,7 @@
     "data": {
       "timestamp": 1753286197248
     },
-    "lastUpdate": 1753286197362,
-    "busy": false
-  },
-  "61559894977429": {
-    "userID": "61559894977429",
-    "name": null,
-    "money": "0",
-    "exp": "0",
-    "createTime": {
-      "timestamp": 1753286198068
-    },
-    "data": {
-      "timestamp": 1753286197954
-    },
-    "lastUpdate": 1753286198068,
+    "lastUpdate": 1753349907417,
     "busy": false
   },
   "61573781756198": {
@@ -206,7 +178,7 @@
     "data": {
       "timestamp": 1753286198656
     },
-    "lastUpdate": 1753286198767,
+    "lastUpdate": 1753349907884,
     "busy": false
   },
   "61560128333192": {
@@ -220,7 +192,7 @@
     "data": {
       "timestamp": 1753286198659
     },
-    "lastUpdate": 1753286198772,
+    "lastUpdate": 1753349908117,
     "busy": false
   },
   "100058914930837": {
@@ -234,7 +206,7 @@
     "data": {
       "timestamp": 1753286199359
     },
-    "lastUpdate": 1753286199471,
+    "lastUpdate": 1753349908351,
     "busy": false
   },
   "61560606307181": {
@@ -248,7 +220,7 @@
     "data": {
       "timestamp": 1753286199362
     },
-    "lastUpdate": 1753286199476,
+    "lastUpdate": 1753349908584,
     "busy": false
   },
   "100088861911281": {
@@ -262,7 +234,7 @@
     "data": {
       "timestamp": 1753286200063
     },
-    "lastUpdate": 1753286200174,
+    "lastUpdate": 1753349908817,
     "busy": false
   },
   "61560915167702": {
@@ -276,21 +248,21 @@
     "data": {
       "timestamp": 1753286200067
     },
-    "lastUpdate": 1753286200181,
+    "lastUpdate": 1753349909051,
     "busy": false
   },
   "100092006324917": {
     "userID": "100092006324917",
     "name": null,
-    "money": "0",
-    "exp": "0",
+    "money": "10000001000",
+    "exp": "150",
     "createTime": {
       "timestamp": 1753286200877
     },
     "data": {
       "timestamp": 1753286200766
     },
-    "lastUpdate": 1753286200877,
+    "lastUpdate": 1753350229099,
     "busy": false
   },
   "61562061187829": {
@@ -304,7 +276,7 @@
     "data": {
       "timestamp": 1753286200771
     },
-    "lastUpdate": 1753286200885,
+    "lastUpdate": 1753349909518,
     "busy": false
   },
   "61563560617607": {
@@ -318,7 +290,7 @@
     "data": {
       "timestamp": 1753286201475
     },
-    "lastUpdate": 1753286201589,
+    "lastUpdate": 1753349909751,
     "busy": false
   },
   "61563957927422": {
@@ -332,7 +304,7 @@
     "data": {
       "timestamp": 1753286202180
     },
-    "lastUpdate": 1753286202294,
+    "lastUpdate": 1753349909984,
     "busy": false
   },
   "61565398071175": {
@@ -346,7 +318,7 @@
     "data": {
       "timestamp": 1753286202885
     },
-    "lastUpdate": 1753286202999,
+    "lastUpdate": 1753349910217,
     "busy": false
   },
   "61565750007510": {
@@ -360,7 +332,7 @@
     "data": {
       "timestamp": 1753286203590
     },
-    "lastUpdate": 1753286203704,
+    "lastUpdate": 1753349910450,
     "busy": false
   },
   "61566299493637": {
@@ -374,7 +346,7 @@
     "data": {
       "timestamp": 1753286204295
     },
-    "lastUpdate": 1753286204409,
+    "lastUpdate": 1753349910683,
     "busy": false
   },
   "61566484649467": {
@@ -388,7 +360,7 @@
     "data": {
       "timestamp": 1753286205002
     },
-    "lastUpdate": 1753286205116,
+    "lastUpdate": 1753349910916,
     "busy": false
   },
   "61566520967693": {
@@ -402,7 +374,7 @@
     "data": {
       "timestamp": 1753286205707
     },
-    "lastUpdate": 1753286205821,
+    "lastUpdate": 1753349911150,
     "busy": false
   },
   "61567060065502": {
@@ -416,7 +388,7 @@
     "data": {
       "timestamp": 1753286206412
     },
-    "lastUpdate": 1753286206527,
+    "lastUpdate": 1753349911383,
     "busy": false
   },
   "61567129687869": {
@@ -430,7 +402,7 @@
     "data": {
       "timestamp": 1753286207118
     },
-    "lastUpdate": 1753286207232,
+    "lastUpdate": 1753349911616,
     "busy": false
   },
   "61569102148012": {
@@ -444,7 +416,7 @@
     "data": {
       "timestamp": 1753286207823
     },
-    "lastUpdate": 1753286207937,
+    "lastUpdate": 1753349911849,
     "busy": false
   },
   "61569162632309": {
@@ -458,7 +430,7 @@
     "data": {
       "timestamp": 1753286208529
     },
-    "lastUpdate": 1753286208642,
+    "lastUpdate": 1753349912082,
     "busy": false
   },
   "61569501838796": {
@@ -472,7 +444,7 @@
     "data": {
       "timestamp": 1753286209233
     },
-    "lastUpdate": 1753286209347,
+    "lastUpdate": 1753349912316,
     "busy": false
   },
   "61569992245195": {
@@ -486,7 +458,7 @@
     "data": {
       "timestamp": 1753286209939
     },
-    "lastUpdate": 1753286210052,
+    "lastUpdate": 1753349912549,
     "busy": false
   },
   "61570059865557": {
@@ -500,7 +472,7 @@
     "data": {
       "timestamp": 1753286210644
     },
-    "lastUpdate": 1753286210758,
+    "lastUpdate": 1753349912782,
     "busy": false
   },
   "61570292561520": {
@@ -514,7 +486,7 @@
     "data": {
       "timestamp": 1753286211350
     },
-    "lastUpdate": 1753286211464,
+    "lastUpdate": 1753349913018,
     "busy": false
   },
   "61572378605218": {
@@ -528,7 +500,7 @@
     "data": {
       "timestamp": 1753286212058
     },
-    "lastUpdate": 1753286212172,
+    "lastUpdate": 1753349913251,
     "busy": false
   },
   "61573166315947": {
@@ -542,7 +514,7 @@
     "data": {
       "timestamp": 1753286212768
     },
-    "lastUpdate": 1753286212881,
+    "lastUpdate": 1753349913484,
     "busy": false
   },
   "61574254653996": {
@@ -556,7 +528,7 @@
     "data": {
       "timestamp": 1753286213473
     },
-    "lastUpdate": 1753286213587,
+    "lastUpdate": 1753349913717,
     "busy": false
   },
   "61574562445353": {
@@ -570,7 +542,7 @@
     "data": {
       "timestamp": 1753286214179
     },
-    "lastUpdate": 1753286214293,
+    "lastUpdate": 1753349913960,
     "busy": false
   },
   "100029743159492": {
@@ -584,7 +556,7 @@
     "data": {
       "timestamp": 1753286214884
     },
-    "lastUpdate": 1753286214998,
+    "lastUpdate": 1753349914197,
     "busy": false
   },
   "100031883637293": {
@@ -598,7 +570,7 @@
     "data": {
       "timestamp": 1753286215590
     },
-    "lastUpdate": 1753286215704,
+    "lastUpdate": 1753349914430,
     "busy": false
   },
   "100034433250204": {
@@ -612,7 +584,7 @@
     "data": {
       "timestamp": 1753286216295
     },
-    "lastUpdate": 1753286216409,
+    "lastUpdate": 1753349914664,
     "busy": false
   },
   "100073159781249": {
@@ -626,7 +598,7 @@
     "data": {
       "timestamp": 1753286217001
     },
-    "lastUpdate": 1753286217115,
+    "lastUpdate": 1753349914897,
     "busy": false
   },
   "100073537934390": {
@@ -640,7 +612,7 @@
     "data": {
       "timestamp": 1753286217706
     },
-    "lastUpdate": 1753286217820,
+    "lastUpdate": 1753349915130,
     "busy": false
   },
   "100075697314863": {
@@ -654,7 +626,7 @@
     "data": {
       "timestamp": 1753286218411
     },
-    "lastUpdate": 1753286218525,
+    "lastUpdate": 1753349915363,
     "busy": false
   },
   "100082330021480": {
@@ -668,21 +640,7 @@
     "data": {
       "timestamp": 1753286219116
     },
-    "lastUpdate": 1753286219229,
-    "busy": false
-  },
-  "100084949885596": {
-    "userID": "100084949885596",
-    "name": null,
-    "money": "0",
-    "exp": "0",
-    "createTime": {
-      "timestamp": 1753286219935
-    },
-    "data": {
-      "timestamp": 1753286219821
-    },
-    "lastUpdate": 1753286219935,
+    "lastUpdate": 1753349915596,
     "busy": false
   },
   "100085926768383": {
@@ -696,7 +654,7 @@
     "data": {
       "timestamp": 1753286220526
     },
-    "lastUpdate": 1753286220639,
+    "lastUpdate": 1753349916063,
     "busy": false
   },
   "100086791917276": {
@@ -710,7 +668,7 @@
     "data": {
       "timestamp": 1753286221230
     },
-    "lastUpdate": 1753286221344,
+    "lastUpdate": 1753349916296,
     "busy": false
   },
   "100088802003401": {
@@ -724,7 +682,7 @@
     "data": {
       "timestamp": 1753286221935
     },
-    "lastUpdate": 1753286222049,
+    "lastUpdate": 1753349916529,
     "busy": false
   },
   "100088979644151": {
@@ -738,7 +696,7 @@
     "data": {
       "timestamp": 1753286222640
     },
-    "lastUpdate": 1753286222754,
+    "lastUpdate": 1753349916762,
     "busy": false
   },
   "100090025175348": {
@@ -752,7 +710,7 @@
     "data": {
       "timestamp": 1753286223345
     },
-    "lastUpdate": 1753286223459,
+    "lastUpdate": 1753349916995,
     "busy": false
   },
   "100090153084285": {
@@ -766,7 +724,7 @@
     "data": {
       "timestamp": 1753286224050
     },
-    "lastUpdate": 1753286224164,
+    "lastUpdate": 1753349917228,
     "busy": false
   },
   "100090160568733": {
@@ -780,7 +738,7 @@
     "data": {
       "timestamp": 1753286224755
     },
-    "lastUpdate": 1753286224869,
+    "lastUpdate": 1753349917461,
     "busy": false
   },
   "100090581575669": {
@@ -794,7 +752,7 @@
     "data": {
       "timestamp": 1753286225460
     },
-    "lastUpdate": 1753286225574,
+    "lastUpdate": 1753349917694,
     "busy": false
   },
   "100090659472673": {
@@ -808,7 +766,63 @@
     "data": {
       "timestamp": 1753286226165
     },
-    "lastUpdate": 1753286226279,
+    "lastUpdate": 1753349917927,
+    "busy": false
+  },
+  "61550822924165": {
+    "userID": "61550822924165",
+    "name": null,
+    "money": "0",
+    "exp": "0",
+    "createTime": {
+      "timestamp": 1753286188895
+    },
+    "data": {
+      "timestamp": 1753286188781
+    },
+    "lastUpdate": 1753349903958,
+    "busy": false
+  },
+  "61559894977429": {
+    "userID": "61559894977429",
+    "name": null,
+    "money": "0",
+    "exp": "0",
+    "createTime": {
+      "timestamp": 1753286198068
+    },
+    "data": {
+      "timestamp": 1753286197954
+    },
+    "lastUpdate": 1753349907650,
+    "busy": false
+  },
+  "100084949885596": {
+    "userID": "100084949885596",
+    "name": null,
+    "money": "0",
+    "exp": "0",
+    "createTime": {
+      "timestamp": 1753286219935
+    },
+    "data": {
+      "timestamp": 1753286219821
+    },
+    "lastUpdate": 1753349915829,
+    "busy": false
+  },
+  "100055622766514": {
+    "userID": "100055622766514",
+    "name": null,
+    "money": "0",
+    "exp": "0",
+    "createTime": {
+      "timestamp": 1753349917407
+    },
+    "data": {
+      "timestamp": 1753349917287
+    },
+    "lastUpdate": 1753349917407,
     "busy": false
   },
   "100091327300022": {
@@ -822,7 +836,7 @@
     "data": {
       "timestamp": 1753286226872
     },
-    "lastUpdate": 1753286226987,
+    "lastUpdate": 1753349918161,
     "busy": false
   },
   "100091675411958": {
@@ -836,7 +850,7 @@
     "data": {
       "timestamp": 1753286227582
     },
-    "lastUpdate": 1753286227695,
+    "lastUpdate": 1753349918394,
     "busy": false
   },
   "100092143240406": {
@@ -850,7 +864,7 @@
     "data": {
       "timestamp": 1753286228287
     },
-    "lastUpdate": 1753286228400,
+    "lastUpdate": 1753349918627,
     "busy": false
   },
   "100092355078398": {
@@ -864,7 +878,7 @@
     "data": {
       "timestamp": 1753286228995
     },
-    "lastUpdate": 1753286229109,
+    "lastUpdate": 1753349918860,
     "busy": false
   },
   "100093451384776": {
@@ -878,7 +892,7 @@
     "data": {
       "timestamp": 1753286229700
     },
-    "lastUpdate": 1753286229813,
+    "lastUpdate": 1753349919093,
     "busy": false
   },
   "100093487784525": {
@@ -892,7 +906,7 @@
     "data": {
       "timestamp": 1753286230407
     },
-    "lastUpdate": 1753286230521,
+    "lastUpdate": 1753349919327,
     "busy": false
   },
   "100094152716212": {
@@ -906,7 +920,7 @@
     "data": {
       "timestamp": 1753286231113
     },
-    "lastUpdate": 1753286231226,
+    "lastUpdate": 1753349919561,
     "busy": false
   },
   "61558269960449": {
@@ -920,7 +934,7 @@
     "data": {
       "timestamp": 1753287961275
     },
-    "lastUpdate": 1753287961397,
+    "lastUpdate": 1753349919794,
     "busy": false
   },
   "61577006758691": {
@@ -934,7 +948,7 @@
     "data": {
       "timestamp": 1753287962026
     },
-    "lastUpdate": 1753287962148,
+    "lastUpdate": 1753349920027,
     "busy": false
   },
   "61577565253243": {
@@ -948,7 +962,7 @@
     "data": {
       "timestamp": 1753287962760
     },
-    "lastUpdate": 1753287962882,
+    "lastUpdate": 1753349920260,
     "busy": false
   },
   "61577888128552": {
@@ -962,7 +976,7 @@
     "data": {
       "timestamp": 1753287963494
     },
-    "lastUpdate": 1753287963616,
+    "lastUpdate": 1753349920493,
     "busy": false
   },
   "61578122551989": {
@@ -976,7 +990,7 @@
     "data": {
       "timestamp": 1753287964228
     },
-    "lastUpdate": 1753287964350,
+    "lastUpdate": 1753349920726,
     "busy": false
   },
   "61578599120232": {
@@ -990,7 +1004,7 @@
     "data": {
       "timestamp": 1753287964962
     },
-    "lastUpdate": 1753287965084,
+    "lastUpdate": 1753349920960,
     "busy": false
   },
   "61578096316305": {
@@ -1004,7 +1018,7 @@
     "data": {
       "timestamp": 1753287966918
     },
-    "lastUpdate": 1753287967040,
+    "lastUpdate": 1753349921193,
     "busy": false
   },
   "61550737298251": {
@@ -1018,7 +1032,7 @@
     "data": {
       "timestamp": 1753288607271
     },
-    "lastUpdate": 1753288607385,
+    "lastUpdate": 1753349921426,
     "busy": false
   },
   "61551669683039": {
@@ -1032,7 +1046,7 @@
     "data": {
       "timestamp": 1753288607975
     },
-    "lastUpdate": 1753288608088,
+    "lastUpdate": 1753349921659,
     "busy": false
   },
   "61554643212615": {
@@ -1046,7 +1060,7 @@
     "data": {
       "timestamp": 1753288608678
     },
-    "lastUpdate": 1753288608791,
+    "lastUpdate": 1753349921892,
     "busy": false
   },
   "61556448497784": {
@@ -1060,21 +1074,7 @@
     "data": {
       "timestamp": 1753288609381
     },
-    "lastUpdate": 1753288609494,
-    "busy": false
-  },
-  "61557525722151": {
-    "userID": "61557525722151",
-    "name": null,
-    "money": "0",
-    "exp": "0",
-    "createTime": {
-      "timestamp": 1753288610197
-    },
-    "data": {
-      "timestamp": 1753288610084
-    },
-    "lastUpdate": 1753288610197,
+    "lastUpdate": 1753349922126,
     "busy": false
   },
   "61557947939465": {
@@ -1088,7 +1088,7 @@
     "data": {
       "timestamp": 1753288610787
     },
-    "lastUpdate": 1753288610900,
+    "lastUpdate": 1753349922592,
     "busy": false
   },
   "61567061386724": {
@@ -1102,7 +1102,7 @@
     "data": {
       "timestamp": 1753288611489
     },
-    "lastUpdate": 1753288611603,
+    "lastUpdate": 1753349922825,
     "busy": false
   },
   "61567286516911": {
@@ -1116,7 +1116,7 @@
     "data": {
       "timestamp": 1753288612193
     },
-    "lastUpdate": 1753288612307,
+    "lastUpdate": 1753349923058,
     "busy": false
   },
   "61568500227389": {
@@ -1130,7 +1130,7 @@
     "data": {
       "timestamp": 1753288612896
     },
-    "lastUpdate": 1753288613010,
+    "lastUpdate": 1753349923292,
     "busy": false
   },
   "61571764165591": {
@@ -1144,7 +1144,7 @@
     "data": {
       "timestamp": 1753288613602
     },
-    "lastUpdate": 1753288613715,
+    "lastUpdate": 1753349923525,
     "busy": false
   },
   "61571899552478": {
@@ -1158,7 +1158,7 @@
     "data": {
       "timestamp": 1753288614305
     },
-    "lastUpdate": 1753288614418,
+    "lastUpdate": 1753349923758,
     "busy": false
   },
   "61573929945555": {
@@ -1172,7 +1172,7 @@
     "data": {
       "timestamp": 1753288615008
     },
-    "lastUpdate": 1753288615121,
+    "lastUpdate": 1753349923991,
     "busy": false
   },
   "61574240550877": {
@@ -1186,7 +1186,7 @@
     "data": {
       "timestamp": 1753288615710
     },
-    "lastUpdate": 1753288615823,
+    "lastUpdate": 1753349924224,
     "busy": false
   },
   "61574664142845": {
@@ -1200,7 +1200,7 @@
     "data": {
       "timestamp": 1753288616413
     },
-    "lastUpdate": 1753288616526,
+    "lastUpdate": 1753349924458,
     "busy": false
   },
   "61575945908350": {
@@ -1214,7 +1214,7 @@
     "data": {
       "timestamp": 1753288617115
     },
-    "lastUpdate": 1753288617229,
+    "lastUpdate": 1753349924691,
     "busy": false
   },
   "61576737490467": {
@@ -1228,7 +1228,7 @@
     "data": {
       "timestamp": 1753288617818
     },
-    "lastUpdate": 1753288617931,
+    "lastUpdate": 1753349924924,
     "busy": false
   },
   "100075534480230": {
@@ -1242,7 +1242,7 @@
     "data": {
       "timestamp": 1753288618520
     },
-    "lastUpdate": 1753288618634,
+    "lastUpdate": 1753349925158,
     "busy": false
   },
   "100075544260733": {
@@ -1256,7 +1256,7 @@
     "data": {
       "timestamp": 1753288619224
     },
-    "lastUpdate": 1753288619337,
+    "lastUpdate": 1753349925391,
     "busy": false
   },
   "100079765447933": {
@@ -1270,7 +1270,7 @@
     "data": {
       "timestamp": 1753288619927
     },
-    "lastUpdate": 1753288620040,
+    "lastUpdate": 1753349925624,
     "busy": false
   },
   "100084770320484": {
@@ -1284,7 +1284,7 @@
     "data": {
       "timestamp": 1753288620630
     },
-    "lastUpdate": 1753288620743,
+    "lastUpdate": 1753349925858,
     "busy": false
   },
   "100085013682238": {
@@ -1298,7 +1298,7 @@
     "data": {
       "timestamp": 1753288621332
     },
-    "lastUpdate": 1753288621445,
+    "lastUpdate": 1753349926091,
     "busy": false
   },
   "100088520750441": {
@@ -1312,7 +1312,7 @@
     "data": {
       "timestamp": 1753288622035
     },
-    "lastUpdate": 1753288622148,
+    "lastUpdate": 1753349926324,
     "busy": false
   },
   "100089608577504": {
@@ -1326,7 +1326,7 @@
     "data": {
       "timestamp": 1753288622738
     },
-    "lastUpdate": 1753288622851,
+    "lastUpdate": 1753349926557,
     "busy": false
   },
   "100090798451003": {
@@ -1340,7 +1340,7 @@
     "data": {
       "timestamp": 1753288623446
     },
-    "lastUpdate": 1753288623559,
+    "lastUpdate": 1753349926790,
     "busy": false
   },
   "100091670813843": {
@@ -1354,7 +1354,7 @@
     "data": {
       "timestamp": 1753288624148
     },
-    "lastUpdate": 1753288624261,
+    "lastUpdate": 1753349927023,
     "busy": false
   },
   "100094213200239": {
@@ -1368,7 +1368,7 @@
     "data": {
       "timestamp": 1753288624851
     },
-    "lastUpdate": 1753288624964,
+    "lastUpdate": 1753349927257,
     "busy": false
   },
   "100095737471875": {
@@ -1382,7 +1382,21 @@
     "data": {
       "timestamp": 1753288625554
     },
-    "lastUpdate": 1753288625667,
+    "lastUpdate": 1753349927490,
+    "busy": false
+  },
+  "61557525722151": {
+    "userID": "61557525722151",
+    "name": null,
+    "money": "1000",
+    "exp": "0",
+    "createTime": {
+      "timestamp": 1753288610197
+    },
+    "data": {
+      "timestamp": 1753288610084
+    },
+    "lastUpdate": 1753349993443,
     "busy": false
   }
 }

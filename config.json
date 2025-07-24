@@ -30,6 +30,7 @@
     "autoApproveMessage": false,
     "note": "Approval system moved to PostgreSQL database",
     "approvedGroups": [
+      "25591694937140767",
       "9826242237455305"
     ]
   },
@@ -133,6 +134,7 @@
   },
   "APPROVAL": {
     "approvedGroups": [
+      "25591694937140767",
       "9826242237455305"
     ],
     "pendingGroups": [],
