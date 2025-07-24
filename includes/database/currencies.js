@@ -128,53 +128,37 @@ module.exports = function ({ models, Users, PostgreSQL }) {
             if (isNaN(userID)) throw new Error("Invalid user ID");
             if (typeof options != 'object') throw new Error("The options parameter passed must be an object");
 
-            // Update in PostgreSQL first
-            if (PostgreSQL) {
-                await PostgreSQL.updateUser(userID, options);
-                const updatedData = await PostgreSQL.getUser(userID);
-                if (updatedData) {
-                    // Sync to JSON as well
-                    const syncData = {
-                        userID: userID,
-                        money: updatedData.money || 0,
-                        exp: updatedData.exp || 0,
-                        createTime: updatedData.createTime || { timestamp: Date.now() },
-                        data: updatedData.data || { timestamp: Date.now() },
-                        lastUpdate: Date.now()
-                    };
-                    
-                    Currencies[userID] = syncData;
-                    await saveData(Currencies);
-                    
-                    // Also update currency table separately for backup
-                    try {
-                        await PostgreSQL.createCurrency(userID, {
-                            money: updatedData.money || 0,
-                            bank: 0,
-                            data: updatedData.data || {}
-                        });
-                    } catch (currencyError) {
-                        console.log(`Currency sync error for ${userID}:`, currencyError.message);
-                    }
-                    
-                    return syncData;
-                }
-            }
-
             // Ensure user exists
             if (!Currencies.hasOwnProperty(userID)) {
                 await getData(userID); // This will create the user
             }
 
+            // Update local JSON first
             Currencies[userID] = {...Currencies[userID], ...options, lastUpdate: Date.now()};
             await saveData(Currencies);
-            
-            // Also sync to PostgreSQL if available
-            if (PostgreSQL && !PostgreSQL.updateUser) {
+
+            // Update in PostgreSQL users table
+            if (PostgreSQL) {
                 try {
-                    await PostgreSQL.updateUser(userID, Currencies[userID]);
+                    await PostgreSQL.updateUser(userID, {
+                        money: Currencies[userID].money || 0,
+                        exp: Currencies[userID].exp || 0,
+                        data: Currencies[userID].data || {}
+                    });
                 } catch (pgError) {
-                    console.log(`[CURRENCIES] PostgreSQL sync error: ${pgError.message}`);
+                    console.log(`[CURRENCIES] PostgreSQL user update error for ${userID}: ${pgError.message}`);
+                }
+
+                // Also sync to currencies table for backup
+                try {
+                    await PostgreSQL.createCurrency(userID, {
+                        money: Currencies[userID].money || 0,
+                        bank: 0,
+                        data: Currencies[userID].data || {}
+                    });
+                    console.log(`[CURRENCIES] Synced currency data for user ${userID}: ${Currencies[userID].money} money`);
+                } catch (currencyError) {
+                    console.log(`[CURRENCIES] Currency table sync error for ${userID}: ${currencyError.message}`);
                 }
             }
             
@@ -216,9 +200,16 @@ module.exports = function ({ models, Users, PostgreSQL }) {
             userID = String(userID);
             let userData = await getData(userID);
             let currentMoney = userData.money || 0;
+            let newMoney = currentMoney + money;
 
-            await setData(userID, { money: currentMoney + money });
-            return true;
+            console.log(`[CURRENCIES] Increasing money for ${userID}: ${currentMoney} + ${money} = ${newMoney}`);
+            
+            const result = await setData(userID, { money: newMoney });
+            if (result) {
+                console.log(`[CURRENCIES] Successfully increased money for ${userID} to ${newMoney}`);
+                return true;
+            }
+            return false;
         } catch (error) {
             console.log(`[CURRENCIES] Increase money error for ${userID}: ${error.message}`);
             return false;
@@ -234,10 +225,20 @@ module.exports = function ({ models, Users, PostgreSQL }) {
             let userData = await getData(userID);
             let currentMoney = userData.money || 0;
 
-            if (currentMoney < money) return false;
+            if (currentMoney < money) {
+                console.log(`[CURRENCIES] Insufficient funds for ${userID}: has ${currentMoney}, needs ${money}`);
+                return false;
+            }
 
-            await setData(userID, { money: currentMoney - money });
-            return true;
+            let newMoney = currentMoney - money;
+            console.log(`[CURRENCIES] Decreasing money for ${userID}: ${currentMoney} - ${money} = ${newMoney}`);
+            
+            const result = await setData(userID, { money: newMoney });
+            if (result) {
+                console.log(`[CURRENCIES] Successfully decreased money for ${userID} to ${newMoney}`);
+                return true;
+            }
+            return false;
         } catch (error) {
             console.log(`[CURRENCIES] Decrease money error for ${userID}: ${error.message}`);
             return false;

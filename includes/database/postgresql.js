@@ -283,6 +283,13 @@ module.exports = function () {
 
     async function updateCurrency(userID, updates) {
         try {
+            // First ensure currency record exists
+            const existing = await getCurrency(userID);
+            if (!existing) {
+                await createCurrency(userID, updates);
+                return await getCurrency(userID);
+            }
+
             const setFields = [];
             const values = [userID];
             let valueIndex = 2;
@@ -305,7 +312,12 @@ module.exports = function () {
             `;
             
             const result = await pool.query(query, values);
-            return result.rows[0];
+            if (result.rows[0]) {
+                const currency = result.rows[0];
+                currency.data = typeof currency.data === 'string' ? JSON.parse(currency.data) : currency.data;
+                return currency;
+            }
+            return false;
         } catch (error) {
             console.error('Error updating currency:', error);
             return false;
