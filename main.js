@@ -832,8 +832,8 @@ async function initializePostgreSQL() {
             autoSync.startAutoSync();
         }
 
-        // Launch application
-        require('./utils/index.js')(loginData);
+        // Launch application - initialize bot instead of calling utils/index.js
+        initializeBot();
     } catch (error) {
         logger.log(`Error in main.js: ${error.message}`, "ERROR");
         process.exit(1);
