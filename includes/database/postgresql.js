@@ -470,7 +470,24 @@ module.exports = function () {
         try {
             const result = await pool.query('SELECT value FROM bot_settings WHERE key = $1', [key]);
             if (result.rows[0]) {
-                return JSON.parse(result.rows[0].value);
+                const value = result.rows[0].value;
+                
+                // If it's already an object, return it directly
+                if (typeof value === 'object' && value !== null) {
+                    return value;
+                }
+                
+                // If it's a string, try to parse it
+                if (typeof value === 'string') {
+                    try {
+                        return JSON.parse(value);
+                    } catch (parseError) {
+                        console.error('JSON parse error for key:', key, 'value:', value);
+                        return value; // Return as string if can't parse
+                    }
+                }
+                
+                return value;
             }
             return null;
         } catch (error) {
