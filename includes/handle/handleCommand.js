@@ -4,6 +4,9 @@ module.exports = function ({ api, Users, Threads, Currencies, logger, botSetting
   const moment = require("moment-timezone");
   const axios = require("axios");
 
+  const cooldowns = new Map(); // ✅ Add this line
+
+  // ...rest of the code
   // Levenshtein Distance for typo correction
   function getLevenshtein(a, b) {
     const matrix = [];
