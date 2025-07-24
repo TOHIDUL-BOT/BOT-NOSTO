@@ -47,7 +47,7 @@ module.exports = function ({ api }) {
             
             // First check if we have cached name in userData
             const userData = usersData[userID];
-            if (userData && userData.name && userData.name !== 'undefined' && userData.name.trim() && !userData.name.startsWith('User-')) {
+            if (userData && userData.name && userData.name !== 'undefined' && userData.name !== null && userData.name.trim() && !userData.name.startsWith('User-')) {
                 return userData.name;
             }
             
@@ -68,12 +68,36 @@ module.exports = function ({ api }) {
                     if (usersData[userID]) {
                         usersData[userID].name = name;
                         await saveData(usersData);
+                        console.log(`[USERS] Saved name "${name}" for user ${userID}`);
                     }
                     
                     return name;
                 }
             } catch (apiError) {
                 console.log(`[USERS] API error for ${userID}: ${apiError.message}`);
+            }
+            
+            // Try direct API call as fallback
+            try {
+                const userInfo = await api.getUserInfo(userID);
+                if (userInfo && userInfo[userID] && userInfo[userID].name && userInfo[userID].name.trim()) {
+                    const name = userInfo[userID].name.trim();
+                    
+                    // Cache the name in our database
+                    if (!usersData[userID]) {
+                        await createData(userID);
+                    }
+                    
+                    if (usersData[userID]) {
+                        usersData[userID].name = name;
+                        await saveData(usersData);
+                        console.log(`[USERS] Saved name "${name}" for user ${userID} (direct API)`);
+                    }
+                    
+                    return name;
+                }
+            } catch (directApiError) {
+                console.log(`[USERS] Direct API error for ${userID}: ${directApiError.message}`);
             }
             
             // Fallback to generating a name
@@ -216,7 +240,19 @@ module.exports = function ({ api }) {
                 delete cleanOptions.data.data;
             }
             
-            usersData[userID] = { ...currentData, ...cleanOptions };
+            // Special handling for name field
+            const updatedData = { ...currentData, ...cleanOptions };
+            
+            // Don't overwrite existing valid name with null/undefined
+            if (cleanOptions.name === null || cleanOptions.name === undefined) {
+                if (currentData.name && currentData.name !== 'undefined' && currentData.name.trim()) {
+                    updatedData.name = currentData.name;
+                } else {
+                    delete updatedData.name; // Remove null/undefined name
+                }
+            }
+            
+            usersData[userID] = updatedData;
             await saveData(usersData);
             if (callback && typeof callback == "function") callback(null, usersData[userID]);
             return usersData[userID];
@@ -304,7 +340,8 @@ module.exports = function ({ api }) {
                 exp: 0,
                 createTime: { timestamp: Date.now() },
                 data: { timestamp: Date.now() },
-                lastUpdate: Date.now()
+                lastUpdate: Date.now(),
+                name: undefined  // Use undefined instead of null
             };
             
             usersData[userID] = userData;
