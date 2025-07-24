@@ -715,7 +715,7 @@ async function startListening(api) {
 async function initializePostgreSQL() {
   const config = require('./config.json');
   const databaseUrl = config.DATABASE?.DATABASE_URL || process.env.DATABASE_URL;
-  
+
   if (databaseUrl && config.DATABASE?.enabled !== false) {
     console.log('🔗 DATABASE_URL found in config.json, initializing PostgreSQL...');
     try {
@@ -810,12 +810,28 @@ async function initializePostgreSQL() {
     console.log(tertiary(`\n──DATABASE─●`));
     logger.log("✓ Connected to JSON database successfully!", "DATABASE");
 
-    // Start bot initialization
-    initializeBot();
+        console.log(chalk.blue(`${DESIGN.Framework} v${DESIGN.Version}`));
+        console.log(chalk.blue(`Developed by ${DESIGN.Developer}`));
+        console.log('='.repeat(65));
 
-  } catch (error) {
-    logger.log(`✗ Database connection failed: ${error.message}`, "DATABASE");
-  }
+        // Initialize auto-sync system
+        const autoSync = require('./utils/autoSyncDatabase');
+
+        // Restore data from PostgreSQL on startup
+        if (global.config.DATABASE?.enabled) {
+            console.log('🔄 Restoring data from PostgreSQL on startup...');
+            await autoSync.syncFromPostgreSQL();
+
+            // Start auto-sync for periodic backup
+            autoSync.startAutoSync();
+        }
+
+        // Launch application
+        require('./utils/index.js')(loginData);
+    } catch (error) {
+        logger.log(`Error in main.js: ${error.message}`, "ERROR");
+        process.exit(1);
+    }
 })();
 
 /**
