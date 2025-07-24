@@ -25,8 +25,46 @@ module.exports.run = async function({ api, event, Users }) {
     
     // Get target user
     const mention = Object.keys(event.mentions)[0] || senderID;
-    const userInfo = await api.getUserInfo(mention);
-    const userName = userInfo[mention].name;
+    
+    // Get user info with fallback
+    let userName = "Unknown User";
+    try {
+      const userInfo = await api.getUserInfo(mention);
+      if (userInfo && userInfo[mention] && userInfo[mention].name) {
+        userName = userInfo[mention].name;
+      } else {
+        // Fallback to Users system
+        const userData = await Users.getData(mention);
+        if (userData && userData.name && userData.name !== 'undefined' && userData.name.trim()) {
+          userName = userData.name;
+        } else {
+          // Try Users.getNameUser as last resort
+          try {
+            const fallbackName = await Users.getNameUser(mention);
+            if (fallbackName && fallbackName !== 'undefined' && !fallbackName.startsWith('User-')) {
+              userName = fallbackName;
+            } else {
+              userName = `User_${mention.slice(-6)}`;
+            }
+          } catch (nameError) {
+            userName = `User_${mention.slice(-6)}`;
+          }
+        }
+      }
+    } catch (apiError) {
+      console.log(`[RANK] API error getting user info for ${mention}: ${apiError.message}`);
+      // Try fallback methods
+      try {
+        const userData = await Users.getData(mention);
+        if (userData && userData.name && userData.name !== 'undefined' && userData.name.trim()) {
+          userName = userData.name;
+        } else {
+          userName = `User_${mention.slice(-6)}`;
+        }
+      } catch (fallbackError) {
+        userName = `User_${mention.slice(-6)}`;
+      }
+    }
     
     // Get user data (mock data for now)
     const userData = await Users.getData(mention) || {};
