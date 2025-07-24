@@ -810,6 +810,12 @@ async function initializePostgreSQL() {
     console.log(tertiary(`\n──DATABASE─●`));
     logger.log("✓ Connected to JSON database successfully!", "DATABASE");
 
+        const DESIGN = global.config.SYSTEM || {
+            Framework: "TOHI-BOT-HUB",
+            Version: "1.8.0",
+            Developer: "TOHIDUL"
+        };
+        
         console.log(chalk.blue(`${DESIGN.Framework} v${DESIGN.Version}`));
         console.log(chalk.blue(`Developed by ${DESIGN.Developer}`));
         console.log('='.repeat(65));
