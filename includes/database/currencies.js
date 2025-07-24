@@ -151,7 +151,7 @@ module.exports = function ({ models, Users, PostgreSQL }) {
 
                 // Also sync to currencies table for backup
                 try {
-                    await PostgreSQL.createCurrency(userID, {
+                    await PostgreSQL.updateCurrency(userID, {
                         money: Currencies[userID].money || 0,
                         bank: 0,
                         data: Currencies[userID].data || {}
@@ -159,6 +159,17 @@ module.exports = function ({ models, Users, PostgreSQL }) {
                     console.log(`[CURRENCIES] Synced currency data for user ${userID}: ${Currencies[userID].money} money`);
                 } catch (currencyError) {
                     console.log(`[CURRENCIES] Currency table sync error for ${userID}: ${currencyError.message}`);
+                    // Fallback to createCurrency if update fails
+                    try {
+                        await PostgreSQL.createCurrency(userID, {
+                            money: Currencies[userID].money || 0,
+                            bank: 0,
+                            data: Currencies[userID].data || {}
+                        });
+                        console.log(`[CURRENCIES] Created new currency record for user ${userID}`);
+                    } catch (createError) {
+                        console.log(`[CURRENCIES] Currency creation error for ${userID}: ${createError.message}`);
+                    }
                 }
             }
             

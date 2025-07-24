@@ -88,21 +88,42 @@ class AutoSyncDatabase {
                 console.log('⚠️ Threads save error:', error.message);
             }
 
-            // Save bankData.json (currencies)
+            // Save bankData.json (currencies) and sync from usersData.json
+            let currencyCount = 0;
             try {
                 const bankRaw = await fs.readFile(bankPath, 'utf8');
                 const bankData = JSON.parse(bankRaw);
 
                 for (const [userID, currencyData] of Object.entries(bankData)) {
-                    await this.PostgreSQL.createCurrency(userID, {
+                    await this.PostgreSQL.updateCurrency(userID, {
                         money: currencyData.money || 0,
                         bank: currencyData.bank || 0,
                         data: currencyData.data || {}
                     });
+                    currencyCount++;
                 }
-                console.log(`💾 Saved ${Object.keys(bankData).length} currencies`);
             } catch (error) {
                 console.log('⚠️ Bank save error:', error.message);
+            }
+
+            // Also sync money from usersData.json to currencies table
+            try {
+                const usersRaw = await fs.readFile(usersPath, 'utf8');
+                const usersData = JSON.parse(usersRaw);
+
+                for (const [userID, userData] of Object.entries(usersData)) {
+                    if (userData.money !== undefined) {
+                        await this.PostgreSQL.updateCurrency(userID, {
+                            money: userData.money || 0,
+                            bank: 0,
+                            data: userData.data || {}
+                        });
+                        currencyCount++;
+                    }
+                }
+                console.log(`💾 Saved ${currencyCount} currencies (from both bank and user data)`);
+            } catch (error) {
+                console.log('⚠️ User currency sync error:', error.message);
             }
 
             // Save fb_dtsg.json as bot setting
